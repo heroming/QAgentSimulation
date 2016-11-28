@@ -7,7 +7,9 @@
     <GLEWDIR>D:\glew\glew-1.12.0</GLEWDIR>
     <GLMDIR>D:\3rdparty\glm\0.9.5.4</GLMDIR>
   </PropertyGroup>
-  <PropertyGroup />
+  <PropertyGroup>
+    <_PropertySheetDisplayName>QAgentSimulation</_PropertySheetDisplayName>
+  </PropertyGroup>
   <ItemDefinitionGroup />
   <ItemGroup>
     <BuildMacro Include="QTDIR">

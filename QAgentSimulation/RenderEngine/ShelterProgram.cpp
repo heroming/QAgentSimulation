@@ -3,7 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "CityBuildingProgram.h"
+#include "ShelterProgram.h"
 
 #ifndef NDEBUG
 #include "RenderEngine/GLErrorChecker.h"
@@ -13,7 +13,7 @@
 #include "RenderEngine/UniformCamera.h"
 #include "RenderEngine/ShaderManager.h"
 
-CityBuildingProgram::CityBuildingProgram()
+ShelterProgram::ShelterProgram()
 {
     m_point_buffer = 0;
     m_index_buffer = 0;
@@ -21,28 +21,28 @@ CityBuildingProgram::CityBuildingProgram()
     m_vertex_array_object = 0;
 }
 
-CityBuildingProgram::~CityBuildingProgram()
+ShelterProgram::~ShelterProgram()
 {
     release_vertex_array();
     if (m_program_handle != 0) glDeleteProgram(m_program_handle);
 }
 
-UniformCamera * CityBuildingProgram::get_camera()
+UniformCamera * ShelterProgram::get_camera()
 {
     return m_camera;
 }
 
-void CityBuildingProgram::set_camera(UniformCamera * camera)
+void ShelterProgram::set_camera(UniformCamera * camera)
 {
     m_camera = camera;
 }
 
-bool CityBuildingProgram::link_program()
+bool ShelterProgram::link_program()
 {
     // fetch shaders;
-    GLuint l_vertex_shader_handle = ShaderManager::add_shader("./Shaders/CityBuildingVS.glsl", GL_VERTEX_SHADER);
-    GLuint l_geometry_shader_handle = ShaderManager::add_shader("./Shaders/CityBuildingGS.glsl", GL_GEOMETRY_SHADER);
-    GLuint l_fragment_shader_handle = ShaderManager::add_shader("./Shaders/CityBuildingFS.glsl", GL_FRAGMENT_SHADER);
+    GLuint l_vertex_shader_handle = ShaderManager::add_shader("./Shaders/ShelterVS.glsl", GL_VERTEX_SHADER);
+    GLuint l_geometry_shader_handle = ShaderManager::add_shader("./Shaders/ShelterGS.glsl", GL_GEOMETRY_SHADER);
+    GLuint l_fragment_shader_handle = ShaderManager::add_shader("./Shaders/ShelterFS.glsl", GL_FRAGMENT_SHADER);
 
     if (!l_vertex_shader_handle || !l_geometry_shader_handle || !l_fragment_shader_handle) return false;
 
@@ -78,7 +78,7 @@ bool CityBuildingProgram::link_program()
     return true;
 }
 
-void CityBuildingProgram::setup_vertex_array()
+void ShelterProgram::setup_vertex_array()
 {
     if (m_vertex_array_object) release_vertex_array();
 
@@ -101,13 +101,13 @@ void CityBuildingProgram::setup_vertex_array()
     glBindVertexArray(0);
 }
 
-void CityBuildingProgram::release_vertex_array()
+void ShelterProgram::release_vertex_array()
 {
     glDeleteVertexArrays(1, &m_vertex_array_object);
     m_vertex_array_object = 0;
 }
 
-void CityBuildingProgram::render()
+void ShelterProgram::render()
 {
     if (!m_camera || !m_vertex_array_object || !m_program_handle) return;
 
@@ -142,7 +142,7 @@ void CityBuildingProgram::render()
 #endif
 }
 
-void CityBuildingProgram::bind_buffer_data()
+void ShelterProgram::bind_buffer_data()
 {
     glBindBuffer(GL_ARRAY_BUFFER, m_point_buffer);
     glBufferData(GL_ARRAY_BUFFER, m_point.size() * sizeof(float), m_point.data(), GL_DYNAMIC_DRAW);
@@ -153,24 +153,10 @@ void CityBuildingProgram::bind_buffer_data()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void CityBuildingProgram::load_city_building()
+void ShelterProgram::load_shelter()
 {
     m_point.clear();
     m_index.clear();
-    if (IO::load_data("./Data/city.dat", m_point, m_index))
-    {
-        const float inf = 1e12;
-        m_box[0] = m_box[2] = m_box[4] = inf;
-        m_box[1] = m_box[3] = m_box[5] = -inf;
-        for (int k = 0; k < (int)m_point.size(); k += 3)
-        {
-            for (int i = 0; i < 3; ++ i)
-            {
-                if (m_point[k + i] < m_box[i << 1]) m_box[i << 1] = m_point[k + i];
-                if (m_point[k + i] > m_box[i << 1 | 1]) m_box[i << 1 | 1] = m_point[k + i];
-            }
-        }
-        m_camera->set_bounding_box(m_box);
-    }
+    IO::load_data("./Data/shelter.dat", m_point, m_index);
 }
 

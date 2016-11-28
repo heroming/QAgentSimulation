@@ -8,7 +8,7 @@ layout (location = 0) out vec4 color;
 
 void main()
 {
-    vec4 l_color = vec4(0.68, 0.71, 0.75, 1.0);
+    vec4 l_color = vec4(0.52, 0.75, 0.91, 1.0);
 
     vec3 l_camera_direction = normalize(-m_position);
     vec3 l_light_direction = normalize(vec3(2.0, 0.5, -2.0)-m_position);

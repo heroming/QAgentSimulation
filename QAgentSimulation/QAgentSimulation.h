@@ -7,6 +7,9 @@
 
 #include "RenderEngine/UniformCamera.h"
 #include "RenderEngine/CityBuildingProgram.h"
+#include "RenderEngine/RiverProgram.h"
+#include "RenderEngine/ShelterProgram.h"
+#include "RenderEngine/AgentProgram.h"
 
 class QAgentSimulation : public QGLWidget
 {
@@ -34,6 +37,10 @@ private:
     int m_mouse_y;
 
     UniformCamera m_camera;
+
     CityBuildingProgram m_city;
+    RiverProgram m_river;
+    ShelterProgram m_shelter;
+    AgentProgram m_agent;
 };
 

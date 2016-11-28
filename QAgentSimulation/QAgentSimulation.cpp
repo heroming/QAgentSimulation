@@ -6,6 +6,12 @@ QAgentSimulation::QAgentSimulation(QWidget *parent): QGLWidget(parent)
 {
     m_city.set_camera(&m_camera);
     m_city.load_city_building();
+    m_river.set_camera(&m_camera);
+    m_river.load_river();
+    m_shelter.set_camera(&m_camera);
+    m_shelter.load_shelter();
+    m_agent.set_camera(&m_camera);
+    m_agent.load_agent();
     m_camera.load_default_status();
     m_camera.set_perspective(true);
 }
@@ -20,11 +26,23 @@ void QAgentSimulation::initializeGL()
     GLenum l_glew_state = glewInit();
     if (l_glew_state != GLEW_OK) QMessageBox::warning(this, tr("GLEW"), tr("≥ı ºªØ¥ÌŒÛ£°"));
 
-    glClearColor(0.40, 0.41, 0.40, 1.0);
+    glClearColor(0.85, 0.85, 0.85, 1.0);
 
     m_city.link_program();
     m_city.setup_vertex_array();
     m_city.bind_buffer_data();
+
+    m_river.link_program();
+    m_river.setup_vertex_array();
+    m_river.bind_buffer_data();
+
+    m_shelter.link_program();
+    m_shelter.setup_vertex_array();
+    m_shelter.bind_buffer_data();
+
+    m_agent.link_program();
+    m_agent.setup_vertex_array();
+    m_agent.bind_buffer_data();
 }
 
 void QAgentSimulation::paintGL()
@@ -32,6 +50,9 @@ void QAgentSimulation::paintGL()
     makeCurrent();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     m_city.render();
+    m_river.render();
+    m_shelter.render();
+    m_agent.render();
 }
 
 void QAgentSimulation::resizeGL(int width, int height)
