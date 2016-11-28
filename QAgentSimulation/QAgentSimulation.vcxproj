@@ -98,7 +98,7 @@
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;$(GLEWDIR)\$(Platform)\lib;$(GLEWDIR)\lib\Release\$(Platform);$(GLUTDIR)\$(Platform)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -156,9 +156,11 @@
     </ClCompile>
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="QAgentSimulation.cpp" />
-    <ClCompile Include="RenderEngine\GLErrorChecker.cpp" />
+    <ClCompile Include="RenderEngine\CityBuildingProgram.cpp" />
+    <ClCompile Include="RenderEngine\ShaderManager.cpp" />
     <ClCompile Include="RenderEngine\UniformCamera.cpp" />
     <ClCompile Include="RenderEngine\UniformCameraConfig.cpp" />
+    <ClCompile Include="Utilities\IO.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="QAgentSimulation.h">
@@ -203,9 +205,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_QAgentSimulation.h" />
-    <ClInclude Include="RenderEngine\GLErrorChecker.h" />
+    <ClInclude Include="RenderEngine\CityBuildingProgram.h" />
+    <ClInclude Include="RenderEngine\ShaderManager.h" />
     <ClInclude Include="RenderEngine\UniformCamera.h" />
     <ClInclude Include="RenderEngine\UniformCameraConfig.h" />
+    <ClInclude Include="Utilities\IO.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="QAgentSimulation.qrc">
@@ -227,6 +231,11 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\qrc_%(Filename).cpp;%(Outputs)</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\rcc.exe" -name "%(Filename)" -no-compress "%(FullPath)" -o .\GeneratedFiles\qrc_%(Filename).cpp</Command>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\CityBuildingFS.glsl" />
+    <None Include="Shaders\CityBuildingGS.glsl" />
+    <None Include="Shaders\CityBuildingVS.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

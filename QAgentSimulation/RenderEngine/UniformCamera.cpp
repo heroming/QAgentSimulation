@@ -28,7 +28,7 @@ void UniformCamera::set_viewport(int x,int y,int width,int height)
     update_projection_matrix();
 }
 
-void UniformCamera::set_bounding_box(float xmin,float xmax,float ymin,float ymax,float zmin,float zmax)
+void UniformCamera::set_bounding_box(float xmin, float xmax, float ymin, float ymax, float zmin, float zmax)
 {
     // 更新包围球的中心和半径
     glm::vec3 l_dvec_min(xmin, ymin, zmin), l_dvec_max(xmax, ymax, zmax);
@@ -37,7 +37,7 @@ void UniformCamera::set_bounding_box(float xmin,float xmax,float ymin,float ymax
     update_cull_face();
 }
 
-void UniformCamera::set_bounding_box(const float* new_buffer)
+void UniformCamera::set_bounding_box(const float * new_buffer)
 {
     // 更新包围球的中心和半径
     glm::vec3 l_dvec_min(new_buffer[0], new_buffer[2], new_buffer[4]);
@@ -52,7 +52,7 @@ float UniformCamera::get_bounding_box_radius() const
     return config.bounding_sphere_radius;
 }
 
-void UniformCamera::translate(float startx,float starty,float endx,float endy)
+void UniformCamera::translate(float startx, float starty, float endx, float endy)
 {
     glm::vec4 view_space_center = this->projection_matrix * glm::vec4(this->config.translate_position, 1.0);
     view_space_center /= view_space_center.w;

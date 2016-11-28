@@ -36,6 +36,12 @@
     <Filter Include="RenderEngine">
       <UniqueIdentifier>{8bfbf64b-585e-4252-bc06-5fb18b751ecd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utilities">
+      <UniqueIdentifier>{bac4313c-24cb-4ca8-b443-d21f30babb7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{1352dbe2-71e4-42a3-8ca7-e1ccccf486cd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="QAgentSimulation.cpp">
@@ -50,14 +56,20 @@
     <ClCompile Include="GeneratedFiles\qrc_QAgentSimulation.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="RenderEngine\GLErrorChecker.cpp">
-      <Filter>RenderEngine</Filter>
-    </ClCompile>
     <ClCompile Include="RenderEngine\UniformCamera.cpp">
       <Filter>RenderEngine</Filter>
     </ClCompile>
     <ClCompile Include="RenderEngine\UniformCameraConfig.cpp">
       <Filter>RenderEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderEngine\CityBuildingProgram.cpp">
+      <Filter>RenderEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderEngine\ShaderManager.cpp">
+      <Filter>RenderEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="Utilities\IO.cpp">
+      <Filter>Utilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -75,14 +87,31 @@
     <ClInclude Include="GeneratedFiles\ui_QAgentSimulation.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="RenderEngine\GLErrorChecker.h">
-      <Filter>RenderEngine</Filter>
-    </ClInclude>
     <ClInclude Include="RenderEngine\UniformCamera.h">
       <Filter>RenderEngine</Filter>
     </ClInclude>
     <ClInclude Include="RenderEngine\UniformCameraConfig.h">
       <Filter>RenderEngine</Filter>
     </ClInclude>
+    <ClInclude Include="RenderEngine\CityBuildingProgram.h">
+      <Filter>RenderEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderEngine\ShaderManager.h">
+      <Filter>RenderEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Utilities\IO.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\CityBuildingFS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\CityBuildingVS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\CityBuildingGS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
