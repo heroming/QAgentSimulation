@@ -36,6 +36,8 @@ private:
     int m_mouse_x;
     int m_mouse_y;
 
+    bool m_show_agent;
+
     UniformCamera m_camera;
 
     CityBuildingProgram m_city;

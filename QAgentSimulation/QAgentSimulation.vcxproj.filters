@@ -83,6 +83,9 @@
     <ClCompile Include="GeneratedFiles\Debug\moc_QAgentSimulation.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
+    <ClCompile Include="Algorithm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="QAgentSimulation.h">
@@ -93,6 +96,9 @@
     </CustomBuild>
     <CustomBuild Include="QAgentSimulation.qrc">
       <Filter>Source Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Algorithm.h">
+      <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

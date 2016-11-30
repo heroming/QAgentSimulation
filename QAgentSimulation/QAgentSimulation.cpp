@@ -1,9 +1,12 @@
 #include "QAgentSimulation.h"
+#include "Algorithm.h"
 
 #include <freeglut.h>
 
 QAgentSimulation::QAgentSimulation(QWidget *parent): QGLWidget(parent)
 {
+    m_show_agent = true;
+
     m_city.set_camera(&m_camera);
     m_city.load_city_building();
     m_river.set_camera(&m_camera);

@@ -54,3 +54,49 @@ bool IO::load_data(const std::string & path, std::vector<float> & point)
 
     return true;
 }
+
+bool IO::load_damage(const std::string & path, std::vector<int> & x_coordinate, std::vector<int> & y_coordinate, std::vector<std::vector<char>> & data)
+{
+    printf("loading damage file : %s  ... ...\n", path.c_str());
+    std::ifstream l_stream(path);
+    if (!l_stream.good()) return false;
+
+    int l_x_count, l_y_count;
+    std::string line;
+    while (std::getline(l_stream, line)) 
+    {
+        if (line.find("X_COORDINATES") == 0)
+        {
+            std::stringstream ss(line);
+            ss >> line >> l_x_count >> line;
+            x_coordinate.resize(l_x_count);
+            for (int i = 0; i < l_x_count; ++ i) l_stream >> x_coordinate[i];
+        }
+        else if (line.find("Y_COORDINATES") == 0)
+        {
+            std::stringstream ss(line);
+            ss >> line >> l_y_count >> line;
+            y_coordinate.resize(l_y_count);
+            for (int i = 0; i < l_y_count; ++ i) l_stream >> y_coordinate[i];
+        }
+        else if (line.find("obstacle_data") == 0)
+        {
+            int l_t;
+            -- l_x_count;
+            -- l_y_count;
+            std::vector<char> l_v(l_x_count, 0);
+            data.resize(l_y_count, l_v);
+            for (int i = 0; i < l_y_count; ++ i)
+            {
+                if (i % 100 == 0) printf("%.2lf%% ...\n", i * 100.0 / l_y_count);
+                for (int j = 0; j < l_x_count; ++ j)
+                {
+                    l_stream >> l_t;
+                    data[i][j] = (char)l_t;
+                }
+            }
+        }
+    }
+    printf("Finish loading damage file : %s\n", path.c_str());
+    return true;
+}
