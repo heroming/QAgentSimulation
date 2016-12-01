@@ -7,7 +7,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <QTDIR>D:\Qt\4.8.5_x64_msvc2010</QTDIR>
-    <LocalDebuggerEnvironment>PATH=$(QTDIR)\bin;$(TCLDIR)\bin;$(GLEWDIR)\bin\Release\$(Platform);$(GLUTDIR)\$(Platform)\bin;(PATH)</LocalDebuggerEnvironment>
+    <LocalDebuggerEnvironment>PATH=$(QTDIR)\bin;$(GLEWDIR)\bin\Release\$(Platform);$(GLUTDIR)\$(Platform)\bin;(PATH)</LocalDebuggerEnvironment>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>
