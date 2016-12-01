@@ -10,6 +10,8 @@
 #include "RenderEngine/RiverProgram.h"
 #include "RenderEngine/ShelterProgram.h"
 #include "RenderEngine/AgentProgram.h"
+#include "RenderEngine/MainRoadProgram.h"
+#include "RenderEngine/RoadProgram.h"
 
 class QAgentSimulation : public QGLWidget
 {
@@ -18,6 +20,15 @@ class QAgentSimulation : public QGLWidget
 public:
     QAgentSimulation(QWidget *parent = 0);
     ~QAgentSimulation();
+
+    bool is_show_agent() const;
+    void set_show_agent(bool flag);
+
+    bool is_show_road() const;
+    void set_show_road(bool flag);
+
+    bool is_show_main_road() const;
+    void set_show_main_road(bool flag);
 
 protected:
     void initializeGL();
@@ -37,6 +48,8 @@ private:
     int m_mouse_y;
 
     bool m_show_agent;
+    bool m_show_road;
+    bool m_show_main_road;
 
     UniformCamera m_camera;
 
@@ -44,5 +57,7 @@ private:
     RiverProgram m_river;
     ShelterProgram m_shelter;
     AgentProgram m_agent;
+    RoadProgram m_road;
+    MainRoadProgram m_main_road;
 };
 

@@ -86,6 +86,21 @@
     <ClCompile Include="Algorithm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="QAgentSimulationWidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_QAgentSimulationWidget.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QAgentSimulationWidget.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderEngine\MainRoadProgram.cpp">
+      <Filter>RenderEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderEngine\RoadProgram.cpp">
+      <Filter>RenderEngine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="QAgentSimulation.h">
@@ -98,6 +113,9 @@
       <Filter>Source Files</Filter>
     </CustomBuild>
     <CustomBuild Include="Algorithm.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="QAgentSimulationWidget.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
@@ -128,6 +146,12 @@
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_QAgentSimulation.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderEngine\MainRoadProgram.h">
+      <Filter>RenderEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderEngine\RoadProgram.h">
+      <Filter>RenderEngine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -162,6 +186,18 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Shaders\AgentVS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\MainRoadVS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\MainRoadFS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\RoadFS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\RoadVS.glsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

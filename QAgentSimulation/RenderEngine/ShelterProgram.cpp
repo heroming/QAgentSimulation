@@ -153,10 +153,10 @@ void ShelterProgram::bind_buffer_data()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void ShelterProgram::load_shelter()
+void ShelterProgram::load_data()
 {
     m_point.clear();
     m_index.clear();
-    IO::load_data("./Data/shelter.dat", m_point, m_index);
+    IO::load_triangle_data("./Data/shelter.dat", m_point, m_index);
 }
 

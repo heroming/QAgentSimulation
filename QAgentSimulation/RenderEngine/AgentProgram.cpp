@@ -141,9 +141,9 @@ void AgentProgram::bind_buffer_data()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void AgentProgram::load_agent()
+void AgentProgram::load_data()
 {
     m_point.clear();
-    IO::load_data("./Data/agent.dat", m_point);
+    IO::load_point_data("./Data/agent.dat", m_point);
 }
 

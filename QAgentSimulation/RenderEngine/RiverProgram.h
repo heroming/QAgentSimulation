@@ -21,7 +21,7 @@ public:
     void bind_buffer_data();
     void render();
 
-    void load_river();
+    void load_data();
 
 private:
 

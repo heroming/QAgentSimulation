@@ -153,10 +153,10 @@ void RiverProgram::bind_buffer_data()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void RiverProgram::load_river()
+void RiverProgram::load_data()
 {
     m_point.clear();
     m_index.clear();
-    IO::load_data("./Data/river.dat", m_point, m_index);
+    IO::load_triangle_data("./Data/river.dat", m_point, m_index);
 }
 

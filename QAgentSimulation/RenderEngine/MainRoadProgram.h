@@ -6,11 +6,11 @@
 
 class UniformCamera;
 
-class ShelterProgram
+class MainRoadProgram
 {
 public:
-    ShelterProgram();
-    ~ShelterProgram();
+    MainRoadProgram();
+    ~MainRoadProgram();
 
     UniformCamera * get_camera();
     void set_camera(UniformCamera * camera);

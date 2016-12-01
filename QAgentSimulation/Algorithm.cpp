@@ -1,8 +1,13 @@
 #include <vector>
+#include <algorithm>
+#include <functional>
+
 #include <QtGui>
 
 #include "Algorithm.h"
 #include "Utilities/IO.h"
+
+const int TIMESTAMP = 15000;
 
 void Algorithm::build_city_grid_map()
 {
@@ -23,7 +28,7 @@ void Algorithm::build_city_grid_map()
     QPainter l_painter(&l_city);
     l_painter.setPen(Qt::NoPen);
 
-    IO::load_data("./Data/river.dat", l_point, l_index);
+    IO::load_triangle_data("./Data/river.dat", l_point, l_index);
     for (int k = 0; k < (int)l_index.size(); k += 3)
     {
         int l_a = l_index[k] * 3;
@@ -44,7 +49,7 @@ void Algorithm::build_city_grid_map()
 
     l_point.clear();
     l_index.clear();
-    IO::load_data("./Data/shelter.dat", l_point, l_index);
+    IO::load_triangle_data("./Data/shelter.dat", l_point, l_index);
     for (int k = 0; k < (int)l_index.size(); k += 3)
     {
         int l_a = l_index[k] * 3;
@@ -65,7 +70,7 @@ void Algorithm::build_city_grid_map()
 
     l_point.clear();
     l_index.clear();
-    IO::load_data("./Data/city.dat", l_point, l_index);
+    IO::load_triangle_data("./Data/city.dat", l_point, l_index);
     for (int k = 0; k < (int)l_index.size(); k += 3)
     {
         int l_a = l_index[k] * 3;
@@ -143,4 +148,71 @@ void Algorithm::build_city_damage_map()
         l_damage.save(l_save_path, "PNG", 0);
         printf("Saving image %s ... ...\n", l_name.c_str());
     }
+}
+
+void Algorithm::find_the_main_road()
+{
+    // 根据时间步拼接文件名字
+    std::string path = "E:/MAS Data/Graph/0.Graph/Graph/road_usage_0_";
+    char timestamp[16];
+    int first_file_timestamp = 0;
+    sprintf(timestamp, "%07d", first_file_timestamp);
+
+    std::string name = path + std::string(timestamp) + ".vtk";
+
+    // 获取节点以及相应的道路端点(所有时间步的数据都一样，获取一次)
+    std::vector<int> index;
+    std::vector<float> point;
+    IO::load_graph_data(name, point, index);
+
+    IO::save_line_data("./Data/road.txt", point, index);
+    IO::save_line_data("./Data/road.dat", point, index, true);
+
+    int point_size = (int)point.size() / 3;
+    int index_size = (int)index.size() >> 1;
+
+    // 获取不随时间步变化的节点和单元属相
+    std::vector<float> exits;
+    IO::load_graph_atrribute(name, "exits", exits);
+    std::vector<float> weight;
+    IO::load_graph_atrribute(name, "weights", weight);
+
+    // 获取每个时间步的道路人员经过数量
+    std::vector<float> num_agents_passed;
+    std::vector<float> total_agent_passed(index_size, 0.0);
+    for (int idx = 0; idx < TIMESTAMP; idx += 1000)
+    {
+        sprintf(timestamp, "%07d", idx);
+        std::string l_name = path + std::string(timestamp) + ".vtk";
+        IO::load_graph_atrribute(l_name, "num_agents_passed", num_agents_passed);
+        for (int i = 0; i < index_size; ++ i) total_agent_passed[i] += num_agents_passed[i];
+    }
+
+    // 从所有道路中挑选满足的道路作为主要道路(权重占前十分之一，人员经过总数占前十分之一)
+
+    // 获取道路权重的阈值
+    const int WEIGHT = 10;
+    std::vector<float> weight_copy(weight.begin(), weight.end());
+    sort(weight_copy.begin(), weight_copy.end(), std::greater<float>());
+    float weight_threhold = weight_copy[index_size / WEIGHT];
+
+    // 获取道路通过人总数的阈值
+    std::vector<float> total_agent_passed_copy(total_agent_passed.begin(), total_agent_passed.end());
+    sort(total_agent_passed_copy.begin(), total_agent_passed_copy.end(), std::greater<float>());
+    float total_agent_passed_threhold = total_agent_passed_copy[index_size / WEIGHT];
+
+    // 根据阈值进行挑选从所有道路中
+    std::vector<int> main_road_index;
+    for (int i = 0; i < index_size; ++ i)
+    {
+        if (weight[i] > weight_threhold && total_agent_passed[i] > total_agent_passed_threhold)
+        {
+            main_road_index.push_back(index[i << 1]);
+            main_road_index.push_back(index[i << 1 | 1]);
+        }
+    }
+    IO::save_line_data("./Data/main_road.txt", point, main_road_index);
+    IO::save_line_data("./Data/main_road.dat", point, main_road_index, true);
+
+    return;
 }

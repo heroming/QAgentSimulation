@@ -5,18 +5,26 @@
 
 QAgentSimulation::QAgentSimulation(QWidget *parent): QGLWidget(parent)
 {
-    m_show_agent = true;
+    m_show_agent = false;
+    m_show_road = true;
+    m_show_main_road = false;
 
     m_city.set_camera(&m_camera);
-    m_city.load_city_building();
+    m_city.load_data();
     m_river.set_camera(&m_camera);
-    m_river.load_river();
+    m_river.load_data();
     m_shelter.set_camera(&m_camera);
-    m_shelter.load_shelter();
+    m_shelter.load_data();
     m_agent.set_camera(&m_camera);
-    m_agent.load_agent();
+    m_agent.load_data();
+    m_road.set_camera(&m_camera);
+    m_road.load_data();
+    m_main_road.set_camera(&m_camera);
+    m_main_road.load_data();
     m_camera.load_default_status();
     m_camera.set_perspective(true);
+
+    //Algorithm::find_the_main_road();
 }
 
 QAgentSimulation::~QAgentSimulation() {}
@@ -29,7 +37,7 @@ void QAgentSimulation::initializeGL()
     GLenum l_glew_state = glewInit();
     if (l_glew_state != GLEW_OK) QMessageBox::warning(this, tr("GLEW"), tr("³õÊ¼»¯´íÎó£¡"));
 
-    glClearColor(0.85, 0.85, 0.85, 1.0);
+    glClearColor(1.0, 1.0, 1.0, 1.0);
 
     m_city.link_program();
     m_city.setup_vertex_array();
@@ -46,6 +54,14 @@ void QAgentSimulation::initializeGL()
     m_agent.link_program();
     m_agent.setup_vertex_array();
     m_agent.bind_buffer_data();
+
+    m_road.link_program();
+    m_road.setup_vertex_array();
+    m_road.bind_buffer_data();
+
+    m_main_road.link_program();
+    m_main_road.setup_vertex_array();
+    m_main_road.bind_buffer_data();
 }
 
 void QAgentSimulation::paintGL()
@@ -55,7 +71,10 @@ void QAgentSimulation::paintGL()
     m_city.render();
     m_river.render();
     m_shelter.render();
-    m_agent.render();
+
+    if (m_show_agent) m_agent.render();
+    if (m_show_road) m_road.render();
+    if (m_show_main_road) m_main_road.render();
 }
 
 void QAgentSimulation::resizeGL(int width, int height)
@@ -80,18 +99,18 @@ void QAgentSimulation::mouseMoveEvent(QMouseEvent * eve)
     int l_y = eve->y();
     switch (eve->buttons())
     {
-    case Qt::MouseButton::LeftButton:
+    case Qt::LeftButton:
         {
             m_camera.rotate(m_mouse_x, m_mouse_y, l_x, l_y);
         }
         break;
-    case Qt::MouseButton::MidButton:
+    case Qt::MidButton:
         {
             m_camera.translate(m_mouse_x, m_mouse_y, l_x, l_y);
         }
         break;
-    case Qt::MouseButton::RightButton:
-    case Qt::MouseButton::NoButton:
+    case Qt::RightButton:
+    case Qt::NoButton:
     default:
         break;
     }
@@ -110,4 +129,35 @@ void QAgentSimulation::mouseReleaseEvent(QMouseEvent * eve)
 {
     m_mouse_x = eve->x();
     m_mouse_y = eve->y();
+}
+
+bool QAgentSimulation::is_show_agent() const
+{
+    return m_show_agent;
+}
+
+void QAgentSimulation::set_show_agent(bool flag)
+{
+    m_show_agent = flag;
+    update();
+}
+bool QAgentSimulation::is_show_road() const
+{
+    return m_show_road;
+}
+
+void QAgentSimulation::set_show_road(bool flag)
+{
+    m_show_road = flag;
+    update();
+}
+bool QAgentSimulation::is_show_main_road() const
+{
+    return m_show_main_road;
+}
+
+void QAgentSimulation::set_show_main_road(bool flag)
+{
+    m_show_main_road = flag;
+    update();
 }

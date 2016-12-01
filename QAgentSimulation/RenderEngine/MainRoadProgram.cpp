@@ -3,7 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "CityBuildingProgram.h"
+#include "MainRoadProgram.h"
 
 #ifndef NDEBUG
 #include "RenderEngine/GLErrorChecker.h"
@@ -13,7 +13,7 @@
 #include "RenderEngine/UniformCamera.h"
 #include "RenderEngine/ShaderManager.h"
 
-CityBuildingProgram::CityBuildingProgram()
+MainRoadProgram::MainRoadProgram()
 {
     m_point_buffer = 0;
     m_index_buffer = 0;
@@ -21,37 +21,35 @@ CityBuildingProgram::CityBuildingProgram()
     m_vertex_array_object = 0;
 }
 
-CityBuildingProgram::~CityBuildingProgram()
+MainRoadProgram::~MainRoadProgram()
 {
     release_vertex_array();
     if (m_program_handle != 0) glDeleteProgram(m_program_handle);
 }
 
-UniformCamera * CityBuildingProgram::get_camera()
+UniformCamera * MainRoadProgram::get_camera()
 {
     return m_camera;
 }
 
-void CityBuildingProgram::set_camera(UniformCamera * camera)
+void MainRoadProgram::set_camera(UniformCamera * camera)
 {
     m_camera = camera;
 }
 
-bool CityBuildingProgram::link_program()
+bool MainRoadProgram::link_program()
 {
     // fetch shaders;
-    GLuint l_vertex_shader_handle = ShaderManager::add_shader("./Shaders/CityBuildingVS.glsl", GL_VERTEX_SHADER);
-    GLuint l_geometry_shader_handle = ShaderManager::add_shader("./Shaders/CityBuildingGS.glsl", GL_GEOMETRY_SHADER);
-    GLuint l_fragment_shader_handle = ShaderManager::add_shader("./Shaders/CityBuildingFS.glsl", GL_FRAGMENT_SHADER);
+    GLuint l_vertex_shader_handle = ShaderManager::add_shader("./Shaders/MainRoadVS.glsl", GL_VERTEX_SHADER);
+    GLuint l_fragment_shader_handle = ShaderManager::add_shader("./Shaders/MainRoadFS.glsl", GL_FRAGMENT_SHADER);
 
-    if (!l_vertex_shader_handle || !l_geometry_shader_handle || !l_fragment_shader_handle) return false;
+    if (!l_vertex_shader_handle || !l_fragment_shader_handle) return false;
 
     // create program handle
     m_program_handle = glCreateProgram();
 
     // attach shaders
     glAttachShader(m_program_handle, l_vertex_shader_handle);
-    glAttachShader(m_program_handle, l_geometry_shader_handle);
     glAttachShader(m_program_handle, l_fragment_shader_handle);
 #ifndef NDEBUG
     GLErrorChecker::check_current_gl_status(__FILE__, __LINE__, __FUNCSIG__);
@@ -78,7 +76,7 @@ bool CityBuildingProgram::link_program()
     return true;
 }
 
-void CityBuildingProgram::setup_vertex_array()
+void MainRoadProgram::setup_vertex_array()
 {
     if (m_vertex_array_object) release_vertex_array();
 
@@ -101,13 +99,13 @@ void CityBuildingProgram::setup_vertex_array()
     glBindVertexArray(0);
 }
 
-void CityBuildingProgram::release_vertex_array()
+void MainRoadProgram::release_vertex_array()
 {
     glDeleteVertexArrays(1, &m_vertex_array_object);
     m_vertex_array_object = 0;
 }
 
-void CityBuildingProgram::render()
+void MainRoadProgram::render()
 {
     if (!m_camera || !m_vertex_array_object || !m_program_handle) return;
 
@@ -125,13 +123,11 @@ void CityBuildingProgram::render()
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_point_buffer);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, m_index_buffer);
 
-    glFrontFace(GL_CCW);
-    glCullFace(GL_BACK);
-    glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
-    glDrawElements(GL_TRIANGLES, m_index.size(), GL_UNSIGNED_INT, 0);
+    glLineWidth(3.0);
+    glDrawElements(GL_LINES, m_index.size(), GL_UNSIGNED_INT, 0);
+    glLineWidth(1.0);
     glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
 
     glUseProgram(0);
 
@@ -142,7 +138,7 @@ void CityBuildingProgram::render()
 #endif
 }
 
-void CityBuildingProgram::bind_buffer_data()
+void MainRoadProgram::bind_buffer_data()
 {
     glBindBuffer(GL_ARRAY_BUFFER, m_point_buffer);
     glBufferData(GL_ARRAY_BUFFER, m_point.size() * sizeof(float), m_point.data(), GL_DYNAMIC_DRAW);
@@ -153,24 +149,10 @@ void CityBuildingProgram::bind_buffer_data()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void CityBuildingProgram::load_data()
+void MainRoadProgram::load_data()
 {
     m_point.clear();
     m_index.clear();
-    if (IO::load_triangle_data("./Data/city.dat", m_point, m_index))
-    {
-        const float inf = 1e12;
-        m_box[0] = m_box[2] = m_box[4] = inf;
-        m_box[1] = m_box[3] = m_box[5] = -inf;
-        for (int k = 0; k < (int)m_point.size(); k += 3)
-        {
-            for (int i = 0; i < 3; ++ i)
-            {
-                if (m_point[k + i] < m_box[i << 1]) m_box[i << 1] = m_point[k + i];
-                if (m_point[k + i] > m_box[i << 1 | 1]) m_box[i << 1 | 1] = m_point[k + i];
-            }
-        }
-        m_camera->set_bounding_box(m_box);
-    }
+    IO::load_line_data("./Data/main_road.dat", m_point, m_index);
 }
 
