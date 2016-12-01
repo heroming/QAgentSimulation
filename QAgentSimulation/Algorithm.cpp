@@ -174,41 +174,42 @@ void Algorithm::find_the_main_road()
     // 获取不随时间步变化的节点和单元属相
     std::vector<float> exits;
     IO::load_graph_atrribute(name, "exits", exits);
-    std::vector<float> weight;
-    IO::load_graph_atrribute(name, "weights", weight);
+    std::vector<float> weights;
+    IO::load_graph_atrribute(name, "weights", weights);
+    std::vector<float> num_agents_passed;
+    IO::load_graph_atrribute(name, "num_agents_passed", num_agents_passed);
 
     // 获取每个时间步的道路人员经过数量
-    std::vector<float> num_agents_passed;
-    std::vector<float> total_agent_passed(index_size, 0.0);
-    for (int idx = 0; idx < TIMESTAMP; idx += 1000)
+    std::vector<float> stamp_num_agents_passed;
+    std::vector<float> max_agent_passed(index_size, 0.0);
+    for (int idx = 0; idx < TIMESTAMP; idx += 50)
     {
         sprintf(timestamp, "%07d", idx);
         std::string l_name = path + std::string(timestamp) + ".vtk";
-        IO::load_graph_atrribute(l_name, "num_agents_passed", num_agents_passed);
-        for (int i = 0; i < index_size; ++ i) total_agent_passed[i] += num_agents_passed[i];
+        IO::load_graph_atrribute(l_name, "num_agents_passed", stamp_num_agents_passed);
+        for (int i = 0; i < index_size; ++ i) max_agent_passed[i] = std::max(max_agent_passed[i], stamp_num_agents_passed[i]);
     }
 
-    // 从所有道路中挑选满足的道路作为主要道路(权重占前十分之一，人员经过总数占前十分之一)
-
     // 获取道路权重的阈值
-    const int WEIGHT = 10;
-    std::vector<float> weight_copy(weight.begin(), weight.end());
-    sort(weight_copy.begin(), weight_copy.end(), std::greater<float>());
-    float weight_threhold = weight_copy[index_size / WEIGHT];
-
-    // 获取道路通过人总数的阈值
-    std::vector<float> total_agent_passed_copy(total_agent_passed.begin(), total_agent_passed.end());
-    sort(total_agent_passed_copy.begin(), total_agent_passed_copy.end(), std::greater<float>());
-    float total_agent_passed_threhold = total_agent_passed_copy[index_size / WEIGHT];
+    const float weight_threhold = 5.0;
+    const float num_agents_passed_threhold = 2.0;
+    const float EPS = 0.5;
 
     // 根据阈值进行挑选从所有道路中
     std::vector<int> main_road_index;
     for (int i = 0; i < index_size; ++ i)
     {
-        if (weight[i] > weight_threhold && total_agent_passed[i] > total_agent_passed_threhold)
+        // 过滤出口的道路
+        int l_a = index[i << 1];
+        int l_b = index[i << 1 | 1];
+
+        if (exits[l_a] > EPS || exits[l_b] > EPS) continue;
+
+        // 过滤合适的道路
+        if (weights[i] >= weight_threhold && num_agents_passed[i] >= max_agent_passed[i])
         {
-            main_road_index.push_back(index[i << 1]);
-            main_road_index.push_back(index[i << 1 | 1]);
+            main_road_index.push_back(l_a);
+            main_road_index.push_back(l_b);
         }
     }
     IO::save_line_data("./Data/main_road.txt", point, main_road_index);
