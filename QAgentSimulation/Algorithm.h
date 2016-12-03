@@ -12,7 +12,16 @@ public:
     static void build_city_damage_map();
 
     // 读取所有的道路使用数据，标注出城市的主要道路
-    static void find_the_main_road();
+    static void find_the_main_road_by_data_road_information();
+
+
+    /*******************************************************************************
+    ** 根据所有agent逃生的移动情况，标注城市的主要道路
+    *******************************************************************************/
+    static void find_the_main_road_by_agent_movement();
+     
+    // 获取所有agent的移动轨迹点数据，用于预处理
+    static void get_agent_movement(std::vector<std::vector<float>> & agent);
 
 };
 

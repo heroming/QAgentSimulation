@@ -24,7 +24,10 @@ QAgentSimulation::QAgentSimulation(QWidget *parent): QGLWidget(parent)
     m_camera.load_default_status();
     m_camera.set_perspective(true);
 
-    //Algorithm::find_the_main_road();
+    //Algorithm::build_city_damage_map();
+    //Algorithm::find_the_main_road_by_data_road_information();
+    //Algorithm::find_the_main_road_by_agent_movement();
+
 }
 
 QAgentSimulation::~QAgentSimulation() {}
