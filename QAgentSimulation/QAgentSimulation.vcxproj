@@ -176,11 +176,13 @@
     <ClCompile Include="RenderEngine\RiverProgram.cpp" />
     <ClCompile Include="RenderEngine\MainRoadProgram.cpp" />
     <ClCompile Include="RenderEngine\RoadProgram.cpp" />
+    <ClCompile Include="RenderEngine\SelectionRoadProgram.cpp" />
     <ClCompile Include="RenderEngine\ShaderManager.cpp" />
     <ClCompile Include="RenderEngine\ShelterProgram.cpp" />
     <ClCompile Include="RenderEngine\UniformCamera.cpp" />
     <ClCompile Include="RenderEngine\UniformCameraConfig.cpp" />
     <ClCompile Include="Utilities\IO.cpp" />
+    <ClCompile Include="Utilities\Tool.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="QAgentSimulation.h">
@@ -224,6 +226,8 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="RenderEngine\SelectionRoadProgram.h" />
+    <ClInclude Include="Utilities\Tool.h" />
     <CustomBuild Include="Algorithm.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalInputs)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -318,6 +322,8 @@
     <None Include="Shaders\MainRoadVS.glsl" />
     <None Include="Shaders\RoadFS.glsl" />
     <None Include="Shaders\RoadVS.glsl" />
+    <None Include="Shaders\SelectionRoadFS.glsl" />
+    <None Include="Shaders\SelectionRoadVS.glsl" />
     <None Include="Shaders\ShelterFS.glsl" />
     <None Include="Shaders\ShelterGS.glsl" />
     <None Include="Shaders\ShelterVS.glsl" />

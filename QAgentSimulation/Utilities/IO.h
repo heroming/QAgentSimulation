@@ -11,6 +11,7 @@
 class IO
 {
 public:
+    static const int PROCESS_STEP = 50;
 
     static bool file_exist(const std::string & path);
 
@@ -83,6 +84,7 @@ public:
     static bool save_city_map_data(const std::string & path,
         const std::vector<std::vector<char>> & city_map, std::vector<std::vector<float>> & data);
 
+
     /*******************************************************************************
     ** 将计算的2维地图信息保存起来，下次使用时直接读取，不用再进行计算
     *******************************************************************************/
@@ -91,4 +93,12 @@ public:
     static bool save_city_grid_data(const std::string & path,
         const std::vector<std::vector<float>> & city, bool binary = false);
 
+
+    /*******************************************************************************
+    ** 保存关于道路的属性数据，包括节点和单元数据
+    *******************************************************************************/
+    static bool load_road_attribute_data(const std::string & path,
+        std::vector<float> & data, bool binary = false);
+    static bool save_road_attribute_data(const std::string & path,
+        const std::vector<float> & data, bool binary = false);
 };

@@ -15,6 +15,11 @@ public slots:
     void on_action_show_agent();
     void on_action_show_road();
     void on_action_show_main_road();
+    void on_action_show_selection_road();
+
+    void on_action_animation_play();
+    void on_action_animation_next();
+    void on_action_animation_previous();
 
 protected:
     void init_actions();
@@ -26,6 +31,7 @@ private:
 
     // ----------------------- ¹¤¾ßÀ¸ ---------------------
     QToolBar * m_toolbar_view_option;
+    QToolBar * m_toolbar_animation_option;
 
     // ----------------------- ²Ëµ¥À¸ ---------------------
     QMenuBar * m_menubar;
@@ -36,6 +42,11 @@ private:
     QAction * m_action_show_agent;
     QAction * m_action_show_road;
     QAction * m_action_show_main_road;
+    QAction * m_action_show_selection_road;
+
+    QAction * m_action_animation_play;
+    QAction * m_action_animation_next;
+    QAction * m_action_animation_previous;
 
 private:
     QAgentSimulation * m_simulation;

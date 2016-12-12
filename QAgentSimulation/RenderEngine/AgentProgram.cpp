@@ -15,6 +15,7 @@
 
 AgentProgram::AgentProgram()
 {
+    m_timestep = 0;
     m_point_buffer = 0;
     m_program_handle = 0;
     m_vertex_array_object = 0;
@@ -115,12 +116,12 @@ void AgentProgram::render()
     GLuint l_pojection_matrix_location = glGetUniformLocation(m_program_handle, "projection_matrix");
     glUniformMatrix4fv(l_pojection_matrix_location, 1, false, m_camera->get_projection_matrix());
 
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_point_buffer);
+    //glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_point_buffer);
 
     glEnable(GL_PROGRAM_POINT_SIZE);
     glEnable(GL_POINT_SPRITE);
     glEnable(GL_DEPTH_TEST);
-    glDrawArrays(GL_POINTS, 0, m_point.size() / 3);
+    glDrawArrays(GL_POINTS, 0, m_point[m_timestep].size() / 3);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_POINT_SPRITE);
     glDisable(GL_PROGRAM_POINT_SIZE);
@@ -134,16 +135,39 @@ void AgentProgram::render()
 #endif
 }
 
-void AgentProgram::bind_buffer_data()
+void AgentProgram::bind_buffer_data(const int k)
 {
+    m_timestep = k;
     glBindBuffer(GL_ARRAY_BUFFER, m_point_buffer);
-    glBufferData(GL_ARRAY_BUFFER, m_point.size() * sizeof(float), m_point.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, m_point[k].size() * sizeof(float), m_point[k].data(), GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void AgentProgram::load_data()
 {
-    m_point.clear();
-    IO::load_point_data("./Data/agent.dat", m_point);
+    m_point.resize(TIME_COUNT);
+
+    char ch[16];
+    for (int k = 0; k < TIME_COUNT; ++ k)
+    {
+        sprintf(ch, "%07d", k * INTERVAL);
+        std::string agent_path = "./Data/agent/timestep0_" + std::string(ch) + ".dat";
+        IO::load_point_data(agent_path, m_point[k]);
+    }
 }
 
+void AgentProgram::bind_next()
+{
+    if (m_timestep + 1 < TIME_COUNT)
+    {
+        bind_buffer_data(++ m_timestep);
+    }
+}
+
+void AgentProgram::bind_prevois()
+{
+    if (m_timestep > 0)
+    {
+        bind_buffer_data(-- m_timestep);
+    }
+}

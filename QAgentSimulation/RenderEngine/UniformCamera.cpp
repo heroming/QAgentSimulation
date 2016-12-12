@@ -9,13 +9,9 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/constants.hpp>
 
-UniformCamera::UniformCamera(void)
-{
-}
+UniformCamera::UniformCamera(void) {}
 
-UniformCamera::~UniformCamera(void)
-{
-}
+UniformCamera::~UniformCamera(void) {}
 
 void UniformCamera::set_viewport(int x,int y,int width,int height)
 {
@@ -24,7 +20,7 @@ void UniformCamera::set_viewport(int x,int y,int width,int height)
     this->config.viewport.z = width;
     this->config.viewport.w = height;
 
-    glViewport(x, y,  width, height);
+    glViewport(x, y, width, height);
     update_projection_matrix();
 }
 
@@ -248,3 +244,22 @@ void UniformCamera::update_projection_matrix()
         this->projection_matrix = glm::ortho(-view_half_width, view_half_width, -view_half_height, view_half_height, this->config.face_near, this->config.face_far);
     }
 }
+
+void UniformCamera::screen_to_world_coordinate(const int x, const int y, float & wx, float & wy, float & wz)
+{
+    float a = 2.0 * (x - config.viewport.x) / config.viewport.z - 1.0;
+    float b = 1.0 - 2.0 * (y - config.viewport.y) / config.viewport.w;
+
+    glm::mat4 inv = glm::inverse(projection_matrix * mv_matrix);
+    glm::vec4 po = inv * glm::vec4(a, b, 0.0, 1.0);
+    wx = po.x / po.w, wy = po.y / po.w, wz = po.z / po.w;
+}
+
+void UniformCamera::world_to_screen_coordinate(const float x, const float y, const float z, int & sx, int & sy)
+{
+    glm::vec4 po = projection_matrix * (mv_matrix * glm::vec4(x, y, z, 1.0));
+    po.x /= po.w, po.y /= po.w;
+    sx = int((po.x + 1.0) / 2.0 * config.viewport.z) + config.viewport.x;
+    sy = int((1.0 - po.y) / 2.0 * config.viewport.w) + config.viewport.y;
+}
+

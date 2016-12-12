@@ -5,9 +5,20 @@
 
 QAgentSimulation::QAgentSimulation(QWidget *parent): QGLWidget(parent)
 {
+    //Algorithm::build_city_damage_map();
+    //Algorithm::find_the_main_road_by_data_road_information();
+    //Algorithm::find_the_main_road_by_agent_movement();
+    //Algorithm::build_city_road_network();
+    //Algorithm::filter_main_road_by_road_weight_and_heat();
+    //Algorithm::connect_main_road_network();
+    //Algorithm::map_city_grid_and_road();
+    //Algorithm::calculate_road_information();
+    //Algorithm::filter_main_road_by_road_weight();
+
     m_show_agent = false;
     m_show_road = true;
     m_show_main_road = false;
+    m_show_selection_road = false;
 
     m_city.set_camera(&m_camera);
     m_city.load_data();
@@ -21,13 +32,10 @@ QAgentSimulation::QAgentSimulation(QWidget *parent): QGLWidget(parent)
     m_road.load_data();
     m_main_road.set_camera(&m_camera);
     m_main_road.load_data();
+    m_selection_road.set_camera(&m_camera);
+    m_selection_road.load_data();
     m_camera.load_default_status();
     m_camera.set_perspective(true);
-
-    //Algorithm::build_city_damage_map();
-    //Algorithm::find_the_main_road_by_data_road_information();
-    //Algorithm::find_the_main_road_by_agent_movement();
-
 }
 
 QAgentSimulation::~QAgentSimulation() {}
@@ -65,6 +73,10 @@ void QAgentSimulation::initializeGL()
     m_main_road.link_program();
     m_main_road.setup_vertex_array();
     m_main_road.bind_buffer_data();
+
+    m_selection_road.link_program();
+    m_selection_road.setup_vertex_array();
+    m_selection_road.bind_buffer_data();
 }
 
 void QAgentSimulation::paintGL()
@@ -78,6 +90,7 @@ void QAgentSimulation::paintGL()
     if (m_show_agent) m_agent.render();
     if (m_show_road) m_road.render();
     if (m_show_main_road) m_main_road.render();
+    if (m_show_selection_road) m_selection_road.render();
 }
 
 void QAgentSimulation::resizeGL(int width, int height)
@@ -126,6 +139,23 @@ void QAgentSimulation::mousePressEvent(QMouseEvent * eve)
 {
     m_mouse_x = eve->x();
     m_mouse_y = eve->y();
+    switch (eve->buttons())
+    {
+    case Qt::LeftButton:
+        {
+            if (m_show_selection_road)
+            {
+                m_selection_road.road_select(m_mouse_x, m_mouse_y);
+                update();
+            }
+        }
+        break;
+    case Qt::MidButton:
+    case Qt::RightButton:
+    case Qt::NoButton:
+    default:
+        break;
+    }
 }
 
 void QAgentSimulation::mouseReleaseEvent(QMouseEvent * eve)
@@ -142,8 +172,13 @@ bool QAgentSimulation::is_show_agent() const
 void QAgentSimulation::set_show_agent(bool flag)
 {
     m_show_agent = flag;
+    if (!m_show_agent)
+    {
+        m_agent.bind_buffer_data();
+    }
     update();
 }
+
 bool QAgentSimulation::is_show_road() const
 {
     return m_show_road;
@@ -154,6 +189,7 @@ void QAgentSimulation::set_show_road(bool flag)
     m_show_road = flag;
     update();
 }
+
 bool QAgentSimulation::is_show_main_road() const
 {
     return m_show_main_road;
@@ -164,3 +200,38 @@ void QAgentSimulation::set_show_main_road(bool flag)
     m_show_main_road = flag;
     update();
 }
+
+bool QAgentSimulation::is_show_selection_road() const
+{
+    return m_show_selection_road;
+}
+
+void QAgentSimulation::set_show_selection_road(bool flag)
+{
+    m_show_selection_road = flag;
+    if (!m_show_selection_road)
+    {
+        m_selection_road.reset_selection_buffer();
+    }
+    update();
+}
+
+void QAgentSimulation::animation_play()
+{
+}
+
+void QAgentSimulation::animation_next()
+{
+    m_agent.bind_next();
+    update();
+}
+
+void QAgentSimulation::animation_previous()
+{
+    m_agent.bind_prevois();
+    update();
+}
+
+
+
+

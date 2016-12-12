@@ -101,6 +101,12 @@
     <ClCompile Include="RenderEngine\RoadProgram.cpp">
       <Filter>RenderEngine</Filter>
     </ClCompile>
+    <ClCompile Include="Utilities\Tool.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderEngine\SelectionRoadProgram.cpp">
+      <Filter>RenderEngine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="QAgentSimulation.h">
@@ -153,6 +159,12 @@
     <ClInclude Include="RenderEngine\RoadProgram.h">
       <Filter>RenderEngine</Filter>
     </ClInclude>
+    <ClInclude Include="Utilities\Tool.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderEngine\SelectionRoadProgram.h">
+      <Filter>RenderEngine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\CityBuildingFS.glsl">
@@ -198,6 +210,12 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Shaders\RoadVS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\SelectionRoadFS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\SelectionRoadVS.glsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

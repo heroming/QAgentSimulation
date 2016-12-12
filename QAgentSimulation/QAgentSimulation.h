@@ -12,6 +12,7 @@
 #include "RenderEngine/AgentProgram.h"
 #include "RenderEngine/MainRoadProgram.h"
 #include "RenderEngine/RoadProgram.h"
+#include "RenderEngine/SelectionRoadProgram.h"
 
 class QAgentSimulation : public QGLWidget
 {
@@ -29,6 +30,13 @@ public:
 
     bool is_show_main_road() const;
     void set_show_main_road(bool flag);
+
+    bool is_show_selection_road() const;
+    void set_show_selection_road(bool flag);
+
+    void animation_play();
+    void animation_next();
+    void animation_previous();
 
 protected:
     void initializeGL();
@@ -50,6 +58,7 @@ private:
     bool m_show_agent;
     bool m_show_road;
     bool m_show_main_road;
+    bool m_show_selection_road;
 
     UniformCamera m_camera;
 
@@ -59,5 +68,7 @@ private:
     AgentProgram m_agent;
     RoadProgram m_road;
     MainRoadProgram m_main_road;
+    SelectionRoadProgram m_selection_road;
+
 };
 

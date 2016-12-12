@@ -124,6 +124,9 @@ public:
     */
     const float get_scale_parameter();
 
+    void screen_to_world_coordinate(const int x, const int y, float & wx, float & wy, float & wz);
+    void world_to_screen_coordinate(const float x, const float y, const float z, int & sx, int & sy);
+
 private:
     /*!
     * \brief 更新裁剪平面

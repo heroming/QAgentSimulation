@@ -10,7 +10,11 @@ bool IO::load_shader(const std::string & path, std::vector<char> & data)
 {
     // read shader source
     std::ifstream l_shader_file_stream(path);
-    if (!l_shader_file_stream.good()) return false;
+    if (!l_shader_file_stream.good())
+    {
+        printf("Load %s faild !\n", path.c_str());
+        return false;
+    }
 
     l_shader_file_stream.seekg(0, std::ios::end);
     std::streampos l_shader_file_length = l_shader_file_stream.tellg();
@@ -27,7 +31,11 @@ bool IO::load_shader(const std::string & path, std::vector<char> & data)
 bool IO::load_point_data(const std::string & path, std::vector<float> & point)
 {
     std::ifstream l_stream(path, std::ios::binary);
-    if (!l_stream.good()) return false;
+    if (!l_stream.good())
+    {
+        printf("Load %s faild !\n", path.c_str());
+        return false;
+    }
 
     int l_point_size;
     l_stream.read((char *)&l_point_size, sizeof(int));
@@ -44,7 +52,11 @@ bool IO::load_point_data(const std::string & path, std::vector<float> & point)
 bool IO::load_line_data(const std::string & path, std::vector<float> & point, std::vector<int> & index)
 {
     std::ifstream l_stream(path, std::ios::binary);
-    if (!l_stream.good()) return false;
+    if (!l_stream.good())
+    {
+        printf("Load %s faild !\n", path.c_str());
+        return false;
+    }
 
     int l_point_size, l_index_size;
     l_stream.read((char *)&l_point_size, sizeof(int));
@@ -64,7 +76,11 @@ bool IO::load_line_data(const std::string & path, std::vector<float> & point, st
 bool IO::load_triangle_data(const std::string & path, std::vector<float> & point, std::vector<int> & index)
 {
     std::ifstream l_stream(path, std::ios::binary);
-    if (!l_stream.good()) return false;
+    if (!l_stream.good())
+    {
+        printf("Load %s faild !\n", path.c_str());
+        return false;
+    }
 
     int l_point_size, l_index_size;
     l_stream.read((char *)&l_point_size, sizeof(int));
@@ -86,7 +102,11 @@ bool IO::load_damage(const std::string & path, std::vector<int> & x_coordinate,
 {
     printf("loading damage file : %s ...\n", path.c_str());
     std::ifstream l_stream(path);
-    if (!l_stream.good()) return false;
+    if (!l_stream.good())
+    {
+        printf("Load %s faild !\n", path.c_str());
+        return false;
+    }
 
     int x_count, y_count;
     std::string line;
@@ -113,19 +133,21 @@ bool IO::load_damage(const std::string & path, std::vector<int> & x_coordinate,
             -- y_count;
             std::vector<char> l_v(y_count, 0);
             data.resize(x_count, l_v);
+            int l_step = (y_count + PROCESS_STEP - 1) / PROCESS_STEP;
             for (int i = 0; i < y_count; ++ i)
             {
-                if (i > 0 && i % 500 == 0) printf("%.2lf%% ...\n", i * 100.0 / y_count);
+                if (i % l_step == 0) printf("#");
                 for (int j = 0; j < x_count; ++ j)
                 {
                     l_stream >> l_t;
                     data[j][y_count - i - 1] = (char)l_t;
                 }
             }
+            printf("\n");
         }
     }
     l_stream.close();
-    printf("Finish loading : %s ...\n", path.c_str());
+    printf("Finish loading : %s !\n", path.c_str());
     return true;
 }
 
@@ -141,7 +163,11 @@ bool IO::save_damage_data(const std::string & path,
     if (binary)
     {
         std::ofstream stream(path, std::ios::binary);
-        if (!stream.good()) return false;
+        if (!stream.good())
+        {
+            printf("Save %s faild !\n", path.c_str());
+            return false;
+        }
 
         stream.write((char *)&width, sizeof(int));
         stream.write((char *)&height, sizeof(int));
@@ -155,12 +181,17 @@ bool IO::save_damage_data(const std::string & path,
     else
     {
         std::ofstream stream(path);
-        if (!stream.good()) return false;
+        if (!stream.good())
+        {
+            printf("Save %s faild !\n", path.c_str());
+            return false;
+        }
 
         stream << width << " " << height << std::endl;
+        int l_step = (width + PROCESS_STEP - 1) / PROCESS_STEP;
         for (int i = 0; i < width; ++ i)
         {
-            if (i > 0 && i % 500 == 0) printf("%.2lf%% ...\n", i * 100.0 / width);
+            if (i % l_step == 0) printf("#");
             for (int j = 0; j < height; ++ j)
             {
                 if (j > 0) stream << " ";
@@ -168,9 +199,10 @@ bool IO::save_damage_data(const std::string & path,
             }
             stream << std::endl;
         }
+        printf("\n");
         stream.close();
     }
-    printf("Finish saving : %s  ... \n", path.c_str());
+    printf("Finish saving : %s !\n", path.c_str());
     return true;
 }
 
@@ -178,7 +210,11 @@ bool IO::load_graph_data(const std::string & path, std::vector<float> & point, s
 {
     printf("loading graph file : %s  ... ...\n", path.c_str());
     std::ifstream l_stream(path);
-    if (!l_stream.good()) return false;
+    if (!l_stream.good())
+    {
+        printf("Load %s faild !\n", path.c_str());
+        return false;
+    }
 
     int l_count = 0;
     std::string line;
@@ -231,7 +267,7 @@ bool IO::load_graph_data(const std::string & path, std::vector<float> & point, s
         }
     }
     l_stream.close();
-    printf("Finish loading graph file : %s\n", path.c_str());
+    printf("Finish loading graph file : %s !\n", path.c_str());
     return true;
 }
 
@@ -239,7 +275,11 @@ bool IO::load_graph_attribute(const std::string & path, const std::string & name
 {
     printf("loading graph file : %s  ... ...\n", path.c_str());
     std::ifstream l_stream(path);
-    if (!l_stream.good()) return false;
+    if (!l_stream.good())
+    {
+        printf("Load %s faild !\n", path.c_str());
+        return false;
+    }
 
     int l_count = 0;
     std::string line;
@@ -292,7 +332,7 @@ bool IO::load_graph_attribute(const std::string & path, const std::string & name
         }
     }
     l_stream.close();
-    printf("Finish loading graph file : %s\n", path.c_str());
+    printf("Finish loading graph file : %s !\n", path.c_str());
     return true;
 }
 
@@ -303,7 +343,11 @@ bool IO::load_agent_data(const std::string & path, std::vector<float> & points, 
     if (binary)
     {
         std::ifstream stream(path, std::ios::binary);
-        if (!stream.good()) return false;
+        if (!stream.good())
+        {
+            printf("Load %s faild !\n", path.c_str());
+            return false;
+        }
 
         int point_size;
         stream.read((char *)&point_size, sizeof(int));
@@ -319,7 +363,11 @@ bool IO::load_agent_data(const std::string & path, std::vector<float> & points, 
     else
     {
         std::ifstream stream(path);
-        if (!stream.good()) return false;
+        if (!stream.good())
+        {
+            printf("Load %s faild !\n", path.c_str());
+            return false;
+        }
 
         int point_size;
         stream >> point_size;
@@ -346,7 +394,11 @@ bool IO::save_agent_data(const std::string & path, const std::vector<float> & po
     if (binary)
     {
         std::ofstream stream(path, std::ios::binary);
-        if (!stream.good()) return false; 
+        if (!stream.good())
+        {
+            printf("Save %s faild !\n", path.c_str());
+            return false;
+        }
 
         stream.write((char *)&point_size, sizeof(int));
 
@@ -358,7 +410,11 @@ bool IO::save_agent_data(const std::string & path, const std::vector<float> & po
     else
     {
         std::ofstream stream(path);
-        if (!stream.good()) return false;
+        if (!stream.good())
+        {
+            printf("Save %s faild !\n", path.c_str());
+            return false;
+        }
 
         stream << point_size << std::endl;
 
@@ -382,15 +438,20 @@ bool IO::load_agent_path(const std::string & path, std::vector<std::vector<float
     if (binary)
     {
         std::ifstream stream(path, std::ios::binary);
-        if (!stream.good()) return false;
+        if (!stream.good())
+        {
+            printf("Load %s faild !\n", path.c_str());
+            return false;
+        }
 
         int agent_size, point_size;
         stream.read((char *)&agent_size, sizeof(int));
         agents.resize(agent_size);
 
+        int l_step = (agent_size + PROCESS_STEP - 1) / PROCESS_STEP;
         for (int i = 0; i < agent_size; ++ i)
         {
-            if (i > 0 && i % 10000 == 0) printf("%.2lf%% ...\n", i * 100.0 / agent_size);
+            if (i % l_step == 0) printf("#");
 
             stream.read((char *)&point_size, sizeof(int));
             agents[i].resize(point_size * 2);
@@ -402,16 +463,21 @@ bool IO::load_agent_path(const std::string & path, std::vector<std::vector<float
     else
     {
         std::ifstream stream(path);
-        if (!stream.good()) return false;
+        if (!stream.good())
+        {
+            printf("Load %s faild !\n", path.c_str());
+            return false;
+        }
 
         int agent_size, point_size;
 
         stream >> agent_size;
         agents.resize(agent_size);
 
+        int l_step = (agent_size + PROCESS_STEP - 1) / PROCESS_STEP;
         for (int i = 0; i < agent_size; ++ i)
         {
-            if (i > 0 && i % 10000 == 0) printf("%.2lf%% ...\n", i * 100.0 / agent_size);
+            if (i % l_step == 0) printf("#");
 
             stream >> point_size;
             agents[i].resize(point_size * 2);
@@ -421,7 +487,7 @@ bool IO::load_agent_path(const std::string & path, std::vector<std::vector<float
         stream.close();
     }
 
-    printf("Finish loading : %s  ...\n", path.c_str());
+    printf("\nFinish loading : %s !\n", path.c_str());
     return true;
 }
 
@@ -432,14 +498,19 @@ bool IO::save_agent_path(const std::string & path, const std::vector<std::vector
     if (binary)
     {
         std::ofstream stream(path, std::ios::binary);
-        if (!stream.good()) return false; 
+        if (!stream.good())
+        {
+            printf("Save %s faild !\n", path.c_str());
+            return false;
+        }
 
         int agent_size = (int)agents.size();
         stream.write((char *)&agent_size, sizeof(int));
 
+        int l_step = (agent_size + PROCESS_STEP - 1) / PROCESS_STEP;
         for (int i = 0; i < agent_size; ++ i)
         {
-            if (i > 0 && i % 10000 == 0) printf("%.2lf%% ...\n", i * 100.0 / agent_size);
+            if (i % l_step == 0) printf("#");
 
             int point_size = agents[i].size() / 2;
             stream.write((char *)&point_size, sizeof(int));
@@ -451,14 +522,19 @@ bool IO::save_agent_path(const std::string & path, const std::vector<std::vector
     else
     {
         std::ofstream stream(path);
-        if (!stream.good()) return false;
+        if (!stream.good())
+        {
+            printf("Save %s faild !\n", path.c_str());
+            return false;
+        }
 
         int agent_size = (int)agents.size();
         stream << agent_size << std::endl;
 
+        int l_step = (agent_size + PROCESS_STEP - 1) / PROCESS_STEP;
         for (int i = 0; i < agent_size; ++ i)
         {
-            if (i > 0 && i % 10000 == 0) printf("%.2lf%% ...\n", i * 100.0 / agent_size);
+            if (i % l_step == 0) printf("#");
 
             int point_size = agents[i].size() / 2;
             stream << point_size << std::endl;
@@ -473,7 +549,7 @@ bool IO::save_agent_path(const std::string & path, const std::vector<std::vector
         stream.close();
     }
 
-    printf("Finish saving: %s  ...\n", path.c_str());
+    printf("\nFinish saving: %s !\n", path.c_str());
     return true;
 }
 
@@ -486,7 +562,11 @@ bool IO::save_point_data(const std::string & path, const std::vector<float> & po
     if (binary)
     {
         std::ofstream stream(path, std::ios::binary);
-        if (!stream.good()) return false;
+        if (!stream.good())
+        {
+            printf("Save %s faild !\n", path.c_str());
+            return false;
+        }
 
         stream.write((char *)&point_size, sizeof(int));
         for (int i = 0; i < (int)point.size(); ++ i)
@@ -498,7 +578,11 @@ bool IO::save_point_data(const std::string & path, const std::vector<float> & po
     else
     {
         std::ofstream stream(path);
-        if (!stream.good()) return false;
+        if (!stream.good())
+        {
+            printf("Save %s faild !\n", path.c_str());
+            return false;
+        }
 
         stream << point_size << std::endl;
         for (int i = 0; i < (int)point.size(); i += 3)
@@ -521,7 +605,11 @@ bool IO::save_line_data(const std::string & path, const std::vector<float> & poi
     if (binary)
     {
         std::ofstream stream(path, std::ios::binary);
-        if (!stream.good()) return false;
+        if (!stream.good())
+        {
+            printf("Save %s faild !\n", path.c_str());
+            return false;
+        }
 
         stream.write((char *)&point_size, sizeof(int));
         stream.write((char *)&line_size, sizeof(int));
@@ -539,7 +627,11 @@ bool IO::save_line_data(const std::string & path, const std::vector<float> & poi
     else
     {
         std::ofstream stream(path);
-        if (!stream.good()) return false;
+        if (!stream.good())
+        {
+            printf("Save %s faild !\n", path.c_str());
+            return false;
+        }
 
         stream << point_size << " " << line_size << std::endl;
         for (int i = 0; i < (int)point.size(); i += 3)
@@ -566,7 +658,11 @@ bool IO::save_triangle_data(const std::string & path, const std::vector<float> &
     if (binary)
     {
         std::ofstream stream(path, std::ios::binary);
-        if (!stream.good()) return false;
+        if (!stream.good())
+        {
+            printf("Save %s faild !\n", path.c_str());
+            return false;
+        }
 
         stream.write((char *)&point_size, sizeof(int));
         stream.write((char *)&triangle_size, sizeof(int));
@@ -584,7 +680,11 @@ bool IO::save_triangle_data(const std::string & path, const std::vector<float> &
     else
     {
         std::ofstream stream(path);
-        if (!stream.good()) return false;
+        if (!stream.good())
+        {
+            printf("Save %s faild !\n", path.c_str());
+            return false;
+        }
 
         stream << point_size << " " << triangle_size << std::endl;
         for (int i = 0; i < (int)point.size(); i += 3)
@@ -602,10 +702,14 @@ bool IO::save_triangle_data(const std::string & path, const std::vector<float> &
 
 bool IO::load_city_map(const std::string & path, std::vector<std::vector<char>> & data)
 {
-    printf("load city map : %s  ... ", path.c_str());
+    printf("load city map : %s  ... \n", path.c_str());
 
     std::ifstream stream(path, std::ios::binary);
-    if (!stream.good()) return false;
+    if (!stream.good())
+    {
+        printf("Load %s faild !\n", path.c_str());
+        return false;
+    }
 
     int width, height;
     stream.read((char *)&width, sizeof(int));
@@ -614,11 +718,17 @@ bool IO::load_city_map(const std::string & path, std::vector<std::vector<char>> 
     std::vector<char> v(height);
     data.resize(width, v);
 
-    for (int i = 0; i < width; ++ i) stream.read(data[i].data(), height);
+    int l_step = (width + PROCESS_STEP - 1) / PROCESS_STEP;
+    for (int i = 0; i < width; ++ i)
+    {
+
+        if (i % l_step == 0) printf("#");
+        stream.read(data[i].data(), height);
+    }
 
     stream.close();
 
-    printf("Done!\n");
+    printf("\nFinish Loading: %s !\n", path.c_str());
     return true;
 }
 
@@ -666,9 +776,10 @@ bool IO::save_city_map_data(const std::string & path,
         data_exist = false;
     }
 
+    int l_step = (width + PROCESS_STEP - 1) / PROCESS_STEP;
     for (int i = 0; i < width; ++ i)
     {
-        if (i > 0 && i % 500 == 0) printf("%.2lf%% ...\n", i * 100.0 / width);
+        if (i % l_step == 0) printf("#");
         for (int j = 0; j < height; ++ j)
         {
             if (city_map[i][j] == -1)
@@ -719,7 +830,7 @@ bool IO::save_city_map_data(const std::string & path,
     QString out_path = QString(path.c_str());
     city.save(out_path, "PNG", 0);
 
-    printf("Finish Saving : %s ... \n", path.c_str());
+    printf("\nFinish Saving : %s !\n", path.c_str());
     return true;
 }
 
@@ -731,16 +842,21 @@ bool IO::load_city_grid_data(const std::string & path, std::vector<std::vector<f
     if (binary)
     {
         std::ifstream stream(path, std::ios::binary);
-        if (!stream.good()) return false;
+        if (!stream.good())
+        {
+            printf("Load %s faild !\n", path.c_str());
+            return false;
+        }
 
         stream.read((char *)&width, sizeof(int));
         stream.read((char *)&height, sizeof(int));
 
         city.resize(width, std::vector<float>(height));
 
+        int l_step = (width + PROCESS_STEP - 1) / PROCESS_STEP;
         for (int i = 0; i < width; ++ i)
         {
-            if (i > 0 && i % 10000 == 0) printf("%.2lf%% ...\n", i * 100.0 / width);
+            if (i % l_step == 0) printf("#");
             stream.read((char *)city[i].data(), height * sizeof(float));
         }
 
@@ -749,22 +865,27 @@ bool IO::load_city_grid_data(const std::string & path, std::vector<std::vector<f
     else
     {
         std::ifstream stream(path);
-        if (!stream.good()) return false;
+        if (!stream.good())
+        {
+            printf("Load %s faild !\n", path.c_str());
+            return false;
+        }
 
         stream >> width >> height;
 
         city.resize(width, std::vector<float>(height));
 
+        int l_step = (width + PROCESS_STEP - 1) / PROCESS_STEP;
         for (int i = 0; i < width; ++ i)
         {
-            if (i > 0 && i % 10000 == 0) printf("%.2lf%% ...\n", i * 100.0 / width);
+            if (i % l_step == 0) printf("#");
             for (int j = 0; j < height; ++ j) stream >> city[i][j];
         }
 
         stream.close();
     }
 
-    printf("Finish loading : %s  ...\n", path.c_str());
+    printf("\nFinish loading : %s !\n", path.c_str());
     return true;
 }
 
@@ -779,15 +900,19 @@ bool IO::save_city_grid_data(const std::string & path, const std::vector<std::ve
     if (binary)
     {
         std::ofstream stream(path, std::ios::binary);
-        if (!stream.good()) return false; 
-
+        if (!stream.good())
+        {
+            printf("Save %s faild !\n", path.c_str());
+            return false;
+        }
         
         stream.write((char *)&width, sizeof(int));
         stream.write((char *)&height, sizeof(int));
 
+        int l_step = (width + PROCESS_STEP - 1) / PROCESS_STEP;
         for (int i = 0; i < width; ++ i)
         {
-            if (i > 0 && i % 10000 == 0) printf("%.2lf%% ...\n", i * 100.0 / width);
+            if (i % l_step == 0) printf("#");
             stream.write((char *)city[i].data(), height * sizeof(float));
         }
 
@@ -796,13 +921,18 @@ bool IO::save_city_grid_data(const std::string & path, const std::vector<std::ve
     else
     {
         std::ofstream stream(path);
-        if (!stream.good()) return false;
+        if (!stream.good())
+        {
+            printf("Save %s faild !\n", path.c_str());
+            return false;
+        }
 
         stream << width << " " << height << std::endl;
 
+        int l_step = (width + PROCESS_STEP - 1) / PROCESS_STEP;
         for (int i = 0; i < width; ++ i)
         {
-            if (i > 0 && i % 10000 == 0) printf("%.2lf%% ...\n", i * 100.0 / width);
+            if (i % l_step == 0) printf("#");
             for (int j = 0; j < height; ++ j)
             {
                 if (j > 0) stream << " ";
@@ -814,6 +944,91 @@ bool IO::save_city_grid_data(const std::string & path, const std::vector<std::ve
         stream.close();
     }
 
-    printf("Finish saving: %s  ...\n", path.c_str());
+    printf("\nFinish saving: %s !\n", path.c_str());
     return true;
 }
+
+bool IO::load_road_attribute_data(const std::string & path, std::vector<float> & data, bool binary)
+{
+    printf("Loading road attribute : %s  ...\n", path.c_str());
+
+    int data_size;
+    if (binary)
+    {
+        std::ifstream stream(path, std::ios::binary);
+        if (!stream.good())
+        {
+            printf("Load %s faild !\n", path.c_str());
+            return false;
+        }
+
+        stream.read((char *)&data_size, sizeof(int));
+        data.resize(data_size);
+
+        stream.read((char *)data.data(), data.size() * sizeof(float));
+        stream.close();
+    }
+    else
+    {
+        std::ifstream stream(path);
+        if (!stream.good())
+        {
+            printf("Load %s faild !\n", path.c_str());
+            return false;
+        }
+
+        stream >> data_size;
+        data.resize(data_size);
+
+        for (int i = 0; i < data_size; ++ i) stream >> data[i];
+        stream.close();
+    }
+
+    printf("Finish loading : %s  ...\n", path.c_str());
+    return true;
+}
+
+bool IO::save_road_attribute_data(const std::string & path, const std::vector<float> & data, bool binary)
+{
+    printf("Saving road attribute : %s\n", path.c_str());
+    if (data.empty())
+    {
+        printf("Attribute data is empty !\n");
+        return false;
+    }
+
+    int data_size = (int)data.size();
+    if (binary)
+    {
+        std::ofstream stream(path, std::ios::binary);
+        if (!stream.good())
+        {
+            printf("Save %s faild !\n", path.c_str());
+            return false;
+        }
+
+        stream.write((char *)&data_size, sizeof(int));
+        stream.write((char *)data.data(), data_size * sizeof(float));
+        stream.close();
+    }
+    else
+    {
+        std::ofstream stream(path);
+        if (!stream.good())
+        {
+            printf("Save %s faild !\n", path.c_str());
+            return false;
+        }
+
+        stream << data_size << std::endl;
+        for (int i = 0; i < data_size; ++ i) stream << data[i] << std::endl;
+        stream.close();
+    }
+
+    printf("Finish saving: %s !\n", path.c_str());
+    return true;
+}
+
+
+
+

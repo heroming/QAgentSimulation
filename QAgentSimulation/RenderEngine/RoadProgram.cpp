@@ -120,11 +120,10 @@ void RoadProgram::render()
     GLuint l_pojection_matrix_location = glGetUniformLocation(m_program_handle, "projection_matrix");
     glUniformMatrix4fv(l_pojection_matrix_location, 1, false, m_camera->get_projection_matrix());
 
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_point_buffer);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, m_index_buffer);
+    //glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_point_buffer);
+    //glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, m_index_buffer);
 
     glEnable(GL_DEPTH_TEST);
-    glLineWidth(1.0);
     glDrawElements(GL_LINES, m_index.size(), GL_UNSIGNED_INT, 0);
     glDisable(GL_DEPTH_TEST);
 
@@ -152,6 +151,6 @@ void RoadProgram::load_data()
 {
     m_point.clear();
     m_index.clear();
-    IO::load_line_data("./Data/road.dat", m_point, m_index);
+    IO::load_line_data("./Data/road/road.dat", m_point, m_index);
 }
 
