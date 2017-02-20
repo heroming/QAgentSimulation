@@ -22,10 +22,12 @@ const int DY[] = {0, 1, 0, -1, -1, 1, 1, -1, 0};
 
 const int MIN_X = 558;
 const int MAX_X = 10158;
+const int CITY_MAX_X = 9360;
 const int MIN_Y = 59180;
 const int MAX_Y = 64580;
 
 const int WIDTH = MAX_X - MIN_X;
+const int CITY_WIDTH = CITY_MAX_X - MIN_X;
 const int HEIGHT = MAX_Y - MIN_Y;
 
 void Algorithm::build_city_grid_map()
@@ -33,12 +35,6 @@ void Algorithm::build_city_grid_map()
     std::vector<int> l_index;
     std::vector<float> l_point;
 
-    const int MIN_X = 500;
-    const int MAX_X = 9500;
-    const int MIN_Y = 59150;
-    const int MAX_Y = 64600;
-    const int WIDTH = MAX_X - MIN_X;
-    const int HEIGHT = MAX_Y - MIN_Y;
     const float EPS = 1e-6;
 
     QImage l_city(WIDTH, HEIGHT, QImage::Format_RGB32);
@@ -47,6 +43,30 @@ void Algorithm::build_city_grid_map()
     QPainter l_painter(&l_city);
     l_painter.setPen(Qt::NoPen);
 
+    IO::load_triangle_data("./Data/city.dat", l_point, l_index);
+    for (int k = 0; k < (int)l_index.size(); k += 3)
+    {
+        int l_a = l_index[k] * 3;
+        int l_b = l_index[k + 1] * 3;
+        int l_c = l_index[k + 2] * 3;
+        float l_x0 = l_point[l_a] - MIN_X, l_y0 = l_point[l_a + 1] - MIN_Y, l_z0 = l_point[l_a + 2];
+        float l_x1 = l_point[l_b] - MIN_X, l_y1 = l_point[l_b + 1] - MIN_Y, l_z1 = l_point[l_b + 2];
+        float l_x2 = l_point[l_c] - MIN_X, l_y2 = l_point[l_c + 1] - MIN_Y, l_z2 = l_point[l_c + 2];
+        if (EPS < l_z0 && EPS < l_z1 && EPS < l_z2)
+        {
+            QPainterPath l_path;
+
+            l_path.moveTo(l_x0, l_y0);
+            l_path.lineTo(l_x1, l_y1);
+            l_path.lineTo(l_x2, l_y2);
+            l_path.lineTo(l_x0, l_y0);
+
+            l_painter.fillPath(l_path, QBrush(QColor(46, 64, 83)));
+        }
+    }
+
+    l_point.clear();
+    l_index.clear();
     IO::load_triangle_data("./Data/river.dat", l_point, l_index);
     for (int k = 0; k < (int)l_index.size(); k += 3)
     {
@@ -87,30 +107,31 @@ void Algorithm::build_city_grid_map()
         l_painter.fillPath(l_path, QBrush(QColor(35, 155, 86)));
     }
 
-    l_point.clear();
-    l_index.clear();
-    IO::load_triangle_data("./Data/city.dat", l_point, l_index);
-    for (int k = 0; k < (int)l_index.size(); k += 3)
-    {
-        int l_a = l_index[k] * 3;
-        int l_b = l_index[k + 1] * 3;
-        int l_c = l_index[k + 2] * 3;
-        float l_x0 = l_point[l_a] - MIN_X, l_y0 = l_point[l_a + 1] - MIN_Y, l_z0 = l_point[l_a + 2];
-        float l_x1 = l_point[l_b] - MIN_X, l_y1 = l_point[l_b + 1] - MIN_Y, l_z1 = l_point[l_b + 2];
-        float l_x2 = l_point[l_c] - MIN_X, l_y2 = l_point[l_c + 1] - MIN_Y, l_z2 = l_point[l_c + 2];
-        if (EPS < l_z0 && EPS < l_z1 && EPS < l_z2)
+    // city grid数据(-1 for shelter, 0 for road and 1 for obstacle)
+    std::vector<std::vector<char>> city_grid(WIDTH, std::vector<char>(HEIGHT, 0));
+    for (int i = 0; i < WIDTH; ++ i)
+        for (int j = 0; j < HEIGHT; ++ j)
         {
-            QPainterPath l_path;
-
-            l_path.moveTo(l_x0, l_y0);
-            l_path.lineTo(l_x1, l_y1);
-            l_path.lineTo(l_x2, l_y2);
-            l_path.lineTo(l_x0, l_y0);
-
-            l_painter.fillPath(l_path, QBrush(QColor(46, 64, 83)));
+            QRgb c = l_city.pixel(i, j);
+            if ((c & 0xF) == 6)             // shelter
+            {
+                city_grid[i][j] = -1;
+            }
+            else if ((c & 0xF) == 3)        // city
+            {
+                city_grid[i][j] = 1;
+            }
+            else if ((c & 0xF) == 11)       // river
+            {
+                city_grid[i][j] = 2;
+            }
         }
-    }
+
     l_city.save("./Data/city_grid_map.png", "PNG", 0);
+
+    const std::string city_grid_path = "./Data/city_grid";
+    IO::save_damage_data(city_grid_path + ".txt", city_grid);
+    IO::save_damage_data(city_grid_path + ".dat", city_grid, true);
 
 }
 
@@ -166,6 +187,10 @@ void Algorithm::build_city_damage_map()
     }
 }
 
+
+/******************************************************************************
+** 1 : 通过道路流量信息
+*******************************************************************************/
 void Algorithm::find_the_main_road_by_data_road_information()
 {
     // 根据时间步拼接文件名字
@@ -213,6 +238,27 @@ void Algorithm::find_the_main_road_by_data_road_information()
 
     // 根据阈值进行挑选从所有道路中
     std::vector<int> main_road_index;
+
+    /*
+    std::vector<int> main_road_index_0;
+    const float num_agents_passed_threhold_0 = 4.0;
+    std::vector<int> main_road_index_1;
+    const float num_agents_passed_threhold_1 = 6.0;
+    std::vector<int> main_road_index_2;
+    const float num_agents_passed_threhold_2 = 8.0;
+    std::vector<int> main_road_index_3;
+    const float num_agents_passed_threhold_3 = 10.0;
+    std::vector<int> main_road_index_4;
+    const float num_agents_passed_threhold_4 = 15.0;
+    std::vector<int> main_road_index_5;
+    const float num_agents_passed_threhold_5 = 20.0;
+    std::vector<int> main_road_index_6;
+    const float num_agents_passed_threhold_6 = 30.0;
+    std::vector<int> main_road_index_7;
+    const float num_agents_passed_threhold_7 = 50.0;
+    std::vector<int> main_road_index_8;
+    const float num_agents_passed_threhold_8 = 100.0;
+    */
     for (int i = 0; i < index_size; ++ i)
     {
         // 过滤出口的道路
@@ -222,16 +268,90 @@ void Algorithm::find_the_main_road_by_data_road_information()
         if (exits[l_a] > EPS || exits[l_b] > EPS) continue;
 
         // 过滤合适的道路
-        if (weights[i] >= weight_threhold && num_agents_passed[i] >= max_agent_passed[i])
+        //if (weights[i] >= weight_threhold && num_agents_passed[i] >= max_agent_passed[i])
+        if (weights[i] >= weight_threhold && max_agent_passed[i] >= num_agents_passed_threhold)
         {
             main_road_index.push_back(l_a);
             main_road_index.push_back(l_b);
         }
+        /*
+        if (weights[i] >= weight_threhold && max_agent_passed[i] >= num_agents_passed_threhold_0)
+        {
+            main_road_index_0.push_back(l_a);
+            main_road_index_0.push_back(l_b);
+        }
+        if (weights[i] >= weight_threhold && max_agent_passed[i] >= num_agents_passed_threhold_1)
+        {
+            main_road_index_1.push_back(l_a);
+            main_road_index_1.push_back(l_b);
+        }
+        if (weights[i] >= weight_threhold && max_agent_passed[i] >= num_agents_passed_threhold_2)
+        {
+            main_road_index_2.push_back(l_a);
+            main_road_index_2.push_back(l_b);
+        }
+        if (weights[i] >= weight_threhold && max_agent_passed[i] >= num_agents_passed_threhold_3)
+        {
+            main_road_index_3.push_back(l_a);
+            main_road_index_3.push_back(l_b);
+        }
+        if (weights[i] >= weight_threhold && max_agent_passed[i] >= num_agents_passed_threhold_4)
+        {
+            main_road_index_4.push_back(l_a);
+            main_road_index_4.push_back(l_b);
+        }
+        if (weights[i] >= weight_threhold && max_agent_passed[i] >= num_agents_passed_threhold_5)
+        {
+            main_road_index_5.push_back(l_a);
+            main_road_index_5.push_back(l_b);
+        }
+        if (weights[i] >= weight_threhold && max_agent_passed[i] >= num_agents_passed_threhold_6)
+        {
+            main_road_index_6.push_back(l_a);
+            main_road_index_6.push_back(l_b);
+        }
+        if (weights[i] >= weight_threhold && max_agent_passed[i] >= num_agents_passed_threhold_7)
+        {
+            main_road_index_7.push_back(l_a);
+            main_road_index_7.push_back(l_b);
+        }
+        if (weights[i] >= weight_threhold && max_agent_passed[i] >= num_agents_passed_threhold_8)
+        {
+            main_road_index_8.push_back(l_a);
+            main_road_index_8.push_back(l_b);
+        }
+    */
     }
-    IO::save_line_data("./Data/road/main_road.txt", point, main_road_index);
-    IO::save_line_data("./Data/road/main_road.dat", point, main_road_index, true);
+    IO::save_line_data("./Data/road/main_road_net.txt", point, main_road_index);
+    IO::save_line_data("./Data/road/main_road_net.dat", point, main_road_index, true);
+    /*
+    IO::save_line_data("./Data/road/main_road_net_2.txt", point, main_road_index);
+    IO::save_line_data("./Data/road/main_road_net_2.dat", point, main_road_index, true);
+    IO::save_line_data("./Data/road/main_road_net_4.txt", point, main_road_index_0);
+    IO::save_line_data("./Data/road/main_road_net_4.dat", point, main_road_index_0, true);
+    IO::save_line_data("./Data/road/main_road_net_6.txt", point, main_road_index_1);
+    IO::save_line_data("./Data/road/main_road_net_6.dat", point, main_road_index_1, true);
+    IO::save_line_data("./Data/road/main_road_net_8.txt", point, main_road_index_2);
+    IO::save_line_data("./Data/road/main_road_net_8.dat", point, main_road_index_2, true);
+    IO::save_line_data("./Data/road/main_road_net_10.txt", point, main_road_index_3);
+    IO::save_line_data("./Data/road/main_road_net_10.dat", point, main_road_index_3, true);
+    IO::save_line_data("./Data/road/main_road_net_15.txt", point, main_road_index_4);
+    IO::save_line_data("./Data/road/main_road_net_15.dat", point, main_road_index_4, true);
+    IO::save_line_data("./Data/road/main_road_net_20.txt", point, main_road_index_5);
+    IO::save_line_data("./Data/road/main_road_net_20.dat", point, main_road_index_5, true);
+    IO::save_line_data("./Data/road/main_road_net_30.txt", point, main_road_index_6);
+    IO::save_line_data("./Data/road/main_road_net_30.dat", point, main_road_index_6, true);
+    IO::save_line_data("./Data/road/main_road_net_50.txt", point, main_road_index_7);
+    IO::save_line_data("./Data/road/main_road_net_50.dat", point, main_road_index_7, true);
+    IO::save_line_data("./Data/road/main_road_net_100.txt", point, main_road_index_8);
+    IO::save_line_data("./Data/road/main_road_net_100.dat", point, main_road_index_8, true);
+    */
 }
 
+
+/******************************************************************************
+** 2 : 通过各个时间步的人员移动信息构建heat map，在计算道路的heat值，用于过滤主道路
+*******************************************************************************/
 void Algorithm::find_the_main_road_by_agent_movement()
 {
     std::string city_map_path = "./Data/damage/city_damage_map_0.dat";
@@ -445,7 +565,7 @@ void Algorithm::get_main_road_node(const std::vector<std::vector<float>> & heat_
 void Algorithm::filter_main_road_by_heat_map(const std::vector<std::vector<float>> & heat_map)
 {
     const std::string road_path = "./Data/road/road.dat";
-    const std::string main_road_path = "./Data/road/main_road_by_heat";
+    const std::string main_road_path = "./Data/road/main_road_heat";
 
     std::vector<int> index;
     std::vector<float> point;
@@ -472,6 +592,14 @@ void Algorithm::filter_main_road_by_heat_map(const std::vector<std::vector<float
     const float heat_threhold = average * 1.0;
 
     std::vector<int> main_road_index;
+
+    /*
+    const int batch_size = 10;
+    const float heat_batch_threhold[batch_size] = {2.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    const std::string heat_batch_path[batch_size] = {"2", "5", "10", "15", "20", "30", "40", "50", "70", "100"};
+    std::vector<int> main_road_index_batch[batch_size];
+    */
+
     for (int i = 0; i < (int)index.size(); i += 2)
     {
         int l_a = index[i], l_b = index[i + 1];
@@ -487,10 +615,27 @@ void Algorithm::filter_main_road_by_heat_map(const std::vector<std::vector<float
             main_road_index.push_back(l_a);
             main_road_index.push_back(l_b);
         }
+        /*
+        for (int k = 0; k < batch_size; ++ k)
+        {
+            if (value_0 > heat_batch_threhold[k] && value_1 > heat_batch_threhold[k])
+            {
+                main_road_index_batch[k].push_back(l_a);
+                main_road_index_batch[k].push_back(l_b);
+            }
+        }
+        */
     }
 
     IO::save_line_data(main_road_path + ".txt", point, main_road_index);
     IO::save_line_data(main_road_path + ".dat", point, main_road_index, true);
+    /*
+    for (int k = 0; k < batch_size; ++ k)
+    {
+        IO::save_line_data(main_road_path + "_" + heat_batch_path[k] + ".txt", point, main_road_index_batch[k]);
+        IO::save_line_data(main_road_path + "_" + heat_batch_path[k] + ".dat", point, main_road_index_batch[k], true);
+    }
+    */
 }
 
 float Algorithm::get_neibor_heat(const int x, const int y, const int w,
@@ -516,6 +661,7 @@ float Algorithm::get_neibor_heat(const int x, const int y, const int w,
     }
     return ret;
 }
+
 
 void Algorithm::calculate_road_statistic_information()
 {
@@ -621,7 +767,7 @@ void Algorithm::calculate_road_statistic_information()
 void Algorithm::filter_main_road_by_road_weight_and_heat()
 {
     const std::string road_path = "./Data/road/road.dat";
-    const std::string main_road_path = "./Data/road/main_road";
+    const std::string main_road_path = "./Data/road/main_road_heat_weight";
     const std::string attribute_weight_path = "./Data/road/attribute_weight.dat";
     const std::string attribute_distance_path = "./Data/road/attribute_distance.dat";
     const std::string attribute_is_main_path = "./Data/road/attribute_is_main_road.dat";
@@ -645,6 +791,7 @@ void Algorithm::filter_main_road_by_road_weight_and_heat()
     const float weight_threhold = 1.0;
     const float distance_threhold = 1.0;
     std::vector<int> main_road_index;
+
     for (int i = 0; i < index_size; ++ i)
     {
         int a = index[i << 1];
@@ -654,12 +801,14 @@ void Algorithm::filter_main_road_by_road_weight_and_heat()
             main_road_index.push_back(a);
             main_road_index.push_back(b);
         }
+        
     }
 
     IO::save_line_data(main_road_path + ".txt", point, main_road_index);
     IO::save_line_data(main_road_path + ".dat", point, main_road_index, true);
 }
 
+// 未完成...
 void Algorithm::connect_main_road_network()
 {
     const std::string road_path = "./Data/road/road.dat";
@@ -736,6 +885,10 @@ void Algorithm::connect_main_road_network()
     std::vector<bool> is_connect(index_size, false);
 }
 
+
+/******************************************************************************
+** 3 : 先将道路映射到网格中，在根据agent移动将heat值累积到道路上，用于过滤主道路
+*******************************************************************************/
 void Algorithm::map_city_grid_and_road()
 {
     // 导入city map数据(-1 for shelter, 0 for road and 1 for obstacle)
@@ -761,6 +914,7 @@ void Algorithm::map_city_grid_and_road()
         return;
     }
 
+    // 将道路经过的像素填补在网格上
     std::vector<std::vector<float>> city_grid_road_map(WIDTH, std::vector<float>(HEIGHT, -1.0));
     for (int i = 0; i < (int)index.size(); i += 2)
     {
@@ -889,7 +1043,7 @@ void Algorithm::filter_main_road_by_road_weight()
     const std::string road_path = "./Data/road/road.dat";
     const std::string attribute_weight_path = "./Data/road/attribute_weight.dat";
 
-    const std::string main_road_path = "./Data/road/main_road";
+    const std::string main_road_path = "./Data/road/main_road_weight";
     const std::string attribute_is_main_path = "./Data/road/attribute_is_main_road";
 
     // 获取完整的道路的顶点和连接信息
@@ -906,6 +1060,14 @@ void Algorithm::filter_main_road_by_road_weight()
     const float weight_threhold = 50.0;
     std::vector<int> main_road_index;
     std::vector<float> is_main_road(index_size, 0.0);
+
+    /*
+    const int batch_size = 10;
+    const float weight_batch_threhold[batch_size] = {2.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    const std::string weight_batch_path[batch_size] = {"2", "5", "10", "15", "20", "30", "40", "50", "70", "100"};
+    std::vector<int> main_road_index_batch[batch_size];
+    */
+
     for (int k = 0; k < index_size; ++ k)
     {
         int a = index[k << 1];
@@ -916,6 +1078,17 @@ void Algorithm::filter_main_road_by_road_weight()
             main_road_index.push_back(a);
             main_road_index.push_back(b);
         }
+
+        /*
+        for (int i = 0; i < batch_size; ++ i)
+        {
+            if (weight[k] > weight_batch_threhold[i])
+            {
+                main_road_index_batch[i].push_back(a);
+                main_road_index_batch[i].push_back(b);
+            }
+        }
+        */
     }
 
     IO::save_line_data(main_road_path + ".txt", point, main_road_index);
@@ -923,5 +1096,395 @@ void Algorithm::filter_main_road_by_road_weight()
 
     IO::save_road_attribute_data(attribute_is_main_path + ".txt", is_main_road);
     IO::save_road_attribute_data(attribute_is_main_path + ".dat", is_main_road, true);
+
+    /*
+    for (int k = 0; k < batch_size; ++ k)
+    {
+        IO::save_line_data(main_road_path + "_" + weight_batch_path[k] + ".txt", point, main_road_index_batch[k]);
+        IO::save_line_data(main_road_path + "_" + weight_batch_path[k] + ".dat", point, main_road_index_batch[k], true);
+    }
+    */
 } 
+
+
+/******************************************************************************
+** 4 : 直接计算道路的宽度，用于过滤主道路
+*******************************************************************************/
+bool Algorithm::is_valid_position(const std::vector<std::vector<char>> & grid, const int x, const int y, const bool actrual)
+{
+    if (grid.empty() || grid[0].empty()) return 0;
+    if (actrual) return x >= 0 && x < CITY_WIDTH && x < (int)grid.size() && y >= 0 && y < (int)grid[0].size();
+    return x >= 0 && x < (int)grid.size() && y >= 0 && y < (int)grid[0].size();
+}
+
+bool Algorithm::is_valid_edge(const std::vector<std::vector<char>> & grid, const int a, const int b, const int c, const int d)
+{
+    /*
+    // 遍历这条道路的所有像素
+    int x_interval = std::abs(l_x0 - l_x1);
+    int y_interval = std::abs(l_y0 - l_y1);
+
+    float dx, dy;
+    if (x_interval != 0)
+    {
+        dx = (l_x1 - l_x0) / x_interval;
+        dy = (l_y1 - l_y0) / x_interval;
+    }
+    else if (y_interval != 0)
+    {
+        dx = (l_x1 - l_x0) / y_interval;
+        dy = (l_y1 - l_y0) / y_interval;
+    }
+    else
+    {
+        dx = dy = 0.0;
+    }
+
+    float x = l_x0, y = l_y0;
+    do
+    {
+        int px = (int)x, py = (int)y;
+        if (city_map[px][py] != 1 && city_grid_road_map[px][py] < 0)
+        {
+            city_grid_road_map[px][py] = (i >> 1);
+        }
+        x += dx, y += dy;
+    } while (Tool::sgn(x - l_x1) != 0 && Tool::sgn(y - l_y1) != 0);
+    */
+    return true;
+}
+
+int Algorithm::get_point_clearance(const std::vector<std::vector<char>> & grid,
+    const int x, const int y, const bool actual, const bool river)
+{
+    static const int MIN_CLEARANCE = 1;
+    static const int MAX_CLEARANCE = 32;
+    int l = MIN_CLEARANCE, r = MAX_CLEARANCE;
+    while (l <= r)
+    {
+        int m = (l + r) >> 1;
+        if (check_for_clearance(grid, x, y, m, actual, river))
+        {
+            l = m + 1;
+        }
+        else
+        {
+            r = m - 1;
+        }
+    }
+    return r;
+}
+
+bool Algorithm::check_for_clearance(const std::vector<std::vector<char>> & grid,
+    const int x, const int y, const int r, const bool actrual, const bool river)
+{
+    for (int i = -r; i <= r; ++ i)
+    {
+        if (! is_valid_position(grid, x + i, y - r, actrual) || grid[x + i][y - r] == 1 || (river && grid[x + i][y - r] == 2)) return 0;
+        if (! is_valid_position(grid, x + i, y + r, actrual) || grid[x + i][y + r] == 1 || (river && grid[x + i][y + r] == 2)) return 0;
+        if (! is_valid_position(grid, x - r, y + i, actrual) || grid[x - r][y + i] == 1 || (river && grid[x - r][y + i] == 2)) return 0;
+        if (! is_valid_position(grid, x + r, y + i, actrual) || grid[x + r][y + i] == 1 || (river && grid[x + r][y + i] == 2)) return 0;
+    }
+    return 1;
+}
+
+void Algorithm::map_road_end_point_to_city_map_with_clearance()
+{
+    // 导入city map数据(-1 for shelter, 0 for road and 1 for obstacle)
+    const std::string city_grid_path = "./Data/city_grid.dat";
+    std::vector<std::vector<char>> city_grid;
+
+    bool io_status = IO::load_city_map(city_grid_path, city_grid);
+    if (! io_status)
+    {
+        printf("Load %s failed !\n", city_grid_path.c_str());
+        return;
+    }
+
+    // 导入整体的道路数据，获取全部的道路的顶点和连接信息
+    const std::string road_path = "./Data/road/road.dat";
+    std::vector<int> index;
+    std::vector<float> point;
+
+    io_status = IO::load_line_data(road_path, point, index);
+    if (! io_status)
+    {
+        printf("Load %s failed !\n", road_path.c_str());
+        return;
+    }
+
+    // 记录点和边的条数
+    const int number_point = (int)point.size() / 3;
+    const int number_index = (int)index.size() >> 1;
+
+    // 记录主要道路的端点
+    const int clearance_threhold = 5;
+    std::vector<int> main_road_index;
+
+    // 将道路经过的像素填补在网格上
+    printf("Calculate clearance information ...\n");
+    std::vector<bool> is_main_road(number_index, false);
+
+    /*
+    const int batch_size = 10;
+    const int clearance_batch_threhold[batch_size] = {2, 3, 4, 5, 6, 8, 10, 12, 15, 18};
+    const std::string clearance_batch_path[batch_size] = {"2", "3", "4", "5", "6", "8", "10", "12", "15", "18"};
+    std::vector<int> main_road_index_batch[batch_size];
+    */
+
+    std::vector<std::vector<float>> clearance_grid(WIDTH, std::vector<float>(HEIGHT, 0.0));
+    std::vector<std::vector<float>> clearance_grid_river(WIDTH, std::vector<float>(HEIGHT, 0.0));
+    for (int i = 0; i < number_index; ++ i)
+    {
+        // 获取道路的两个端点
+        int a = index[i << 1], b = index[i << 1 | 1];
+        int l_x0 = (int)point[a * 3] - MIN_X, l_y0 = (int)point[a * 3 + 1] - MIN_Y;
+        int l_x1 = (int)point[b * 3] - MIN_X, l_y1 = (int)point[b * 3 + 1] - MIN_Y;
+
+        if (is_valid_position(city_grid, l_x0, l_y0, true) && is_valid_position(city_grid, l_x1, l_y1, true)
+            && city_grid[l_x0][l_y0] + city_grid[l_x1][l_y1] != -2)
+        {
+
+            if (clearance_grid[l_x0][l_y0] < 0.5)
+            {
+                clearance_grid[l_x0][l_y0] = get_point_clearance(city_grid, l_x0, l_y0, true, false);
+                clearance_grid_river[l_x0][l_y0] = get_point_clearance(city_grid, l_x0, l_y0, true, true);
+            }
+            if (clearance_grid[l_x1][l_y1] < 0.5)
+            {
+                clearance_grid[l_x1][l_y1] = get_point_clearance(city_grid, l_x1, l_y1, true, false);
+                clearance_grid_river[l_x1][l_y1] = get_point_clearance(city_grid, l_x1, l_y1, true, true);
+            }
+
+            // filter满足clearance大小的边
+            if (clearance_grid[l_x0][l_y0] >= clearance_threhold && clearance_grid[l_x1][l_y1] >= clearance_threhold)
+            {
+                is_main_road[i] = true;
+            }
+            /*
+            for (int k = 0; k < batch_size; ++ k)
+            {
+                if (clearance_grid[l_x0][l_y0] >= clearance_batch_threhold[k] && clearance_grid[l_x1][l_y1] >= clearance_batch_threhold[k])
+                {
+                    main_road_index_batch[k].push_back(a);
+                    main_road_index_batch[k].push_back(b);
+                }
+            }
+            */
+        }
+    }
+
+    /*
+    const std::string main_road_path_save = "./Data/road/main_road_clearance";
+    for (int k = 0; k < batch_size; ++ k)
+    {
+        IO::save_line_data(main_road_path_save + "_" + clearance_batch_path[k] + ".txt", point, main_road_index_batch[k]);
+        IO::save_line_data(main_road_path_save + "_" + clearance_batch_path[k] + ".dat", point, main_road_index_batch[k], true);
+    }
+    return;
+    */
+
+
+    /**********************************************************************
+    ** 构建道路的Graph，过滤掉其中异常或者孤立的边
+    **********************************************************************/
+    printf("Build graph, and calculate connect component ...\n");
+    std::vector<int> connect_component(number_point, -1);
+    std::vector<std::vector<int>> city_graph(number_point);
+    for (int i = 0; i < number_index; ++ i)
+    {
+        if (is_main_road[i])
+        {
+            int a = index[i << 1], b = index[i << 1 | 1];
+            city_graph[a].push_back(b);
+            city_graph[b].push_back(a);
+        }
+    }
+
+    for (int i = 0; i < number_point; ++ i)
+    {
+        if (connect_component[i] == -1)
+        {
+            int weight = get_connect_component_dfs(city_graph, connect_component, i);
+            set_connect_component_dfs(city_graph, connect_component, i, weight);
+        }
+    }
+
+    // 利用联通分量的大小过滤掉孤立的细小结构，过滤掉曼哈顿距离较小的边
+    printf("Filter main road by connect componet ...\n");
+    const int distance_threhold = 1;
+    const int connect_component_threhold = 64;
+    for (int i= 0; i < number_index; ++ i)
+    {
+        if (is_main_road[i])
+        {
+            int a = index[i << 1], b = index[i << 1 | 1];
+            float l_x0 = point[a * 3] - MIN_X, l_y0 = point[a * 3 + 1] - MIN_Y;
+            float l_x1 = point[b * 3] - MIN_X, l_y1 = point[b * 3 + 1] - MIN_Y;
+            float dis = std::abs(l_x0 - l_x1) + std::abs(l_y0 - l_y1);
+
+            if (dis >= distance_threhold && connect_component[a] >= connect_component_threhold && connect_component[b] >= connect_component_threhold)
+            {
+                main_road_index.push_back(a);
+                main_road_index.push_back(b);
+            }
+        }
+    }
+
+    /**********************************************************************
+    ** 根据新筛选的主要道路，对道路系统进行重构，使用收缩半径r将节点v周围的其他节点
+    ** 收缩到节点v上，以减少节点和边的数量，并减少细小的分支结构
+    **********************************************************************/
+    const int shrink_radius = 12;
+    const int min_shrink_branch = 3;
+    const int min_shrink_clearance = 6;
+
+    std::vector<float> new_point;
+    std::vector<int> point_id(number_point, -1);
+
+    // 记录节点在网格上的位置，便于收缩时计算
+    std::vector<std::vector<int>> point_grid(WIDTH, std::vector<int>(HEIGHT, -1));
+
+    // 根据现在的主要道路，重新建立路网
+    printf("Rebuild graph, and shrink ...\n");
+    for (int i = 0; i < number_point; ++ i) city_graph[i].clear();
+    for (int i = 0; i < (int)main_road_index.size(); i += 2)
+    {
+        int a = main_road_index[i], b = main_road_index[i | 1];
+        city_graph[a].push_back(b);
+        city_graph[b].push_back(a);
+
+        int l_x0 = (int)point[a * 3] - MIN_X, l_y0 = (int)point[a * 3 + 1] - MIN_Y;
+        int l_x1 = (int)point[b * 3] - MIN_X, l_y1 = (int)point[b * 3 + 1] - MIN_Y;
+        point_grid[l_x0][l_y0] = a;
+        point_grid[l_x1][l_y1] = b;
+    }
+
+    // 遍历所有的节点进行收缩
+    for (int i = 0; i < number_point; ++ i)
+    {
+        int l_x = (int)point[i * 3] - MIN_X, l_y = (int)point[i * 3 + 1] - MIN_Y;
+        if (point_id[i] == -1 && city_graph[i].size() >= min_shrink_branch && clearance_grid_river[l_x][l_y] >= min_shrink_clearance)
+        {
+            point_id[i] = (int)new_point.size() / 3;
+            new_point.push_back(point[i * 3]);
+            new_point.push_back(point[i * 3 + 1]);
+            new_point.push_back(0.0);
+            for (int dx = -shrink_radius; dx <= shrink_radius; ++ dx)
+                for (int dy = -shrink_radius; dy <= shrink_radius; ++ dy)
+                {
+                    int px = l_x + dx, py = l_y + dy;
+                    if (is_valid_position(city_grid, px, py, true) && point_grid[px][py] != -1)
+                    {
+                        int l_id = point_grid[px][py];
+                        if (point_id[l_id] == -1) point_id[l_id] = point_id[i];
+                    }
+                }
+        }
+    }
+
+    // 对所有未被收缩的点，任然作为一个节点
+    printf("Deal with nonshrink point ...\n");
+    for (int i = 0; i < number_point; ++ i)
+    {
+        // 表明该点是出现在主要道路中的，并且没有被收缩
+        int l_x = (int)point[i * 3] - MIN_X, l_y = (int)point[i * 3 + 1] - MIN_Y;
+        if (point_grid[l_x][l_y] != -1 && point_id[i] == -1)
+        {
+            point_id[i] = (int)new_point.size() / 3;
+            new_point.push_back(point[i * 3]);
+            new_point.push_back(point[i * 3 + 1]);
+            new_point.push_back(0.0);
+        }
+    }
+
+    // 构建新的主要道路的边
+    printf("Build main road by shrink result ...\n");
+    std::vector<int> new_index;
+    std::set<std::pair<int, int>> new_index_set;
+    for (int i = 0; i < (int)main_road_index.size(); i += 2)
+    {
+        int a = main_road_index[i], b = main_road_index[i | 1];
+        if (point_id[a] != point_id[b])
+        {
+            int p = std::min(point_id[a], point_id[b]), q = std::max(point_id[a], point_id[b]);
+            std::pair<int, int> it = std::make_pair(p, q);
+            if (new_index_set.find(it) == new_index_set.end())
+            {
+                new_index_set.insert(it);
+                new_index.push_back(p);
+                new_index.push_back(q);
+            }
+        }
+    }
+
+    /**********************************************************************
+    ** 根据新筛选的主要道路，对道路系统进行重构，使用收缩半径r将节点v周围的其他节点
+    ** 收缩到节点v上，以减少节点和边的数量，并减少细小的分支结构
+    **********************************************************************/
+    /*
+    printf("Remove violate edge which cross the obstacle ...\n");
+    for (int i = 0; i < (int)new_index.size(); i += 2)
+    {
+        int a = new_index[i << 1], b = new_index[i << 1 | 1];
+        int l_x0 = (int)new_point[a * 3] - MIN_X, l_y0 = (int)new_point[a * 3 + 1] - MIN_Y;
+        int l_x1 = (int)new_point[b * 3] - MIN_X, l_y1 = (int)new_point[b * 3 + 1] - MIN_Y;
+
+        if (!is_valid_edge(city_grid, l_x0, l_y0, l_x1, l_y1))
+        {
+
+        }
+    }
+
+    printf("Rebuild graph ...\n");
+    */
+
+
+    const std::string main_road_path = "./Data/road/main_road_shrink";
+    IO::save_line_data(main_road_path + ".txt", new_point, new_index);
+    printf("point : %d, index : %d\n", (int)new_point.size() / 3, (int)new_index.size() >> 1);
+    IO::save_line_data(main_road_path + ".dat", new_point, new_index, true);
+
+    //const std::string main_road_path = "./Data/road/main_road_clearance";
+    //IO::save_line_data(main_road_path + ".txt", point, main_road_index);
+    //printf("index size : %d\n", (int)main_road_index.size() >> 1);
+    //IO::save_line_data(main_road_path + ".dat", point, main_road_index, true);
+
+    //const std::string clearance_grid_path = "./Data/road/clearance_grid";
+    //IO::save_city_grid_data(clearance_grid_path + ".txt", clearance_grid);
+    //IO::save_city_grid_data(clearance_grid_path + ".dat", clearance_grid, true);
+
+    //const std::string clearance_grid_map_path = "./Data/clearance_grid_map.png";
+    //IO::save_city_map_data(clearance_grid_map_path, city_grid, clearance_grid, 0, 32);
+}
+
+int Algorithm::get_connect_component_dfs(const std::vector<std::vector<int>> & city_graph, std::vector<int> & weight, const int u)
+{
+    int ret = 1;
+    weight[u] = 0;
+
+    for (int i = 0; i < (int)city_graph[u].size(); ++ i)
+    {
+        int v = city_graph[u][i];
+        if (weight[v] == -1)
+        {
+            ret += get_connect_component_dfs(city_graph, weight, v);
+        }
+    }
+    return ret;
+}
+
+void Algorithm::set_connect_component_dfs(const std::vector<std::vector<int>> & city_graph, std::vector<int> & weight, const int u, const int w)
+{
+    weight[u] = w;;
+    for (int i = 0; i < (int)city_graph[u].size(); ++ i)
+    {
+        int v = city_graph[u][i];
+        if (weight[v] == 0)
+        {
+            set_connect_component_dfs(city_graph, weight, v, w);
+        }
+    }
+}
+
 

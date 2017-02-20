@@ -834,6 +834,85 @@ bool IO::save_city_map_data(const std::string & path,
     return true;
 }
 
+bool IO::save_city_map_data(const std::string & path, const std::vector<std::vector<char>> & city_map,
+    std::vector<std::vector<float>> & data, const float min_value, const float max_value)
+{
+    printf("save city map data : %s ... \n", path.c_str());
+
+    const int width = (int)city_map.size();
+    const int height = (int)city_map[0].size();
+
+    QImage city(width, height, QImage::Format_RGB32);
+    city.fill(QColor("white"));
+    QPainter painter(&city);
+
+    bool data_exist = true;
+    float div = max_value - min_value;
+    if (div < 1e-6)
+    {
+        div = 1.0;
+        data_exist = false;
+    }
+
+    int l_step = (width + PROCESS_STEP - 1) / PROCESS_STEP;
+    for (int i = 0; i < width; ++ i)
+    {
+        if (i % l_step == 0) printf("#");
+        for (int j = 0; j < height; ++ j)
+        {
+            if (city_map[i][j] == -1)
+            {
+                painter.setPen(QColor(29, 131, 72));
+                painter.drawPoint(i, j);
+            }
+            else if (city_map[i][j] == 1)
+            {
+                painter.setPen(QColor(86, 101, 115));
+                painter.drawPoint(i, j);
+            }
+            else
+            {
+                if (data_exist)
+                {
+                    float w = data[i][j];
+                    if (max_value < w) w = max_value;
+                    if (w < min_value) w = min_value;
+
+                    float l_r = 0.9, l_g = 1.0, l_b = 0.75;
+                    if (w < min_value + div * 0.25)
+                    {
+                        l_r = 0.0;
+                        l_g = 4 * (w - min_value) / div;
+                    }
+                    else if (w < min_value + div * 0.50)
+                    {
+                        l_r = 0.0;
+                        l_g = 1.0 + 4 * (min_value + div * 0.25 - w) / div;
+                    }
+                    else if (w < min_value + div * 0.75)
+                    {
+                        l_r = 4 * (w - min_value - div * 0.50) / div;
+                        l_b = 0.0;
+                    }
+                    else
+                    {
+                        l_g = 1.0 + 4 * (min_value + div * 0.75 - w) / div;
+                        l_b = 0.0;
+                    }
+                    painter.setPen(QColor(int(l_r * 255), int(l_g * 255), int(l_b * 255)));
+                    painter.drawPoint(i, j);
+                }
+            }
+        }
+    }
+
+    QString out_path = QString(path.c_str());
+    city.save(out_path, "PNG", 0);
+
+    printf("\nFinish Saving : %s !\n", path.c_str());
+    return true;
+}
+
 bool IO::load_city_grid_data(const std::string & path, std::vector<std::vector<float>> & city, bool binary)
 {
     printf("Loading city grid data: %s  ...\n", path.c_str());

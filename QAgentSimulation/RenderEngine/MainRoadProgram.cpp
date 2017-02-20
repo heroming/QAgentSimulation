@@ -153,6 +153,9 @@ void MainRoadProgram::load_data()
 {
     m_point.clear();
     m_index.clear();
-    IO::load_line_data("./Data/road/main_road.dat", m_point, m_index);
+    IO::load_line_data("./Data/road/main_road_shrink.dat", m_point, m_index);
+    //IO::load_line_data("./Data/road/main_road_clearance_10.dat", m_point, m_index);
+    //IO::load_line_data("./Data/road/main_road_clearance.dat", m_point, m_index);
+    //IO::load_line_data("./Data/road/main_road.dat", m_point, m_index);
 }
 

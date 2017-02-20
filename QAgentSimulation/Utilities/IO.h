@@ -83,6 +83,8 @@ public:
     *******************************************************************************/
     static bool save_city_map_data(const std::string & path,
         const std::vector<std::vector<char>> & city_map, std::vector<std::vector<float>> & data);
+    static bool save_city_map_data(const std::string & path, const std::vector<std::vector<char>> & city_map,
+        std::vector<std::vector<float>> & data, const float min_value, const float max_value);
 
 
     /*******************************************************************************

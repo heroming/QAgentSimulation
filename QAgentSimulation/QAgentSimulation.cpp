@@ -5,6 +5,7 @@
 
 QAgentSimulation::QAgentSimulation(QWidget *parent): QGLWidget(parent)
 {
+    //Algorithm::build_city_grid_map();
     //Algorithm::build_city_damage_map();
     //Algorithm::find_the_main_road_by_data_road_information();
     //Algorithm::find_the_main_road_by_agent_movement();
@@ -12,8 +13,9 @@ QAgentSimulation::QAgentSimulation(QWidget *parent): QGLWidget(parent)
     //Algorithm::filter_main_road_by_road_weight_and_heat();
     //Algorithm::connect_main_road_network();
     //Algorithm::map_city_grid_and_road();
-    //Algorithm::calculate_road_information();
+    //Algorithm::calculate_road_statistic_information();
     //Algorithm::filter_main_road_by_road_weight();
+    //Algorithm::map_road_end_point_to_city_map_with_clearance();
 
     m_show_agent = false;
     m_show_road = true;

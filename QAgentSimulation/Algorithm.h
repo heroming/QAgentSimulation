@@ -52,12 +52,29 @@ public:
 
     /******************************************************************************
     ** 直接从agent的移动出发，映射到道路上，通过道路信息再来挑选主要道路，这样主要道路与
-    ** shelter之间直接就成为连接的状态，不用刻意进行connect
+    ** shelter之间直接就成为连接的状态，不用刻意进行connect(结果还是有很多不连续的问题)
     *******************************************************************************/
     static void map_city_grid_and_road();
     static void calculate_road_weight();
     static void filter_main_road_by_road_weight();
 
 
+    /******************************************************************************
+    ** 主要根据地图的网格信息，根据路网的物理形态来生成主要道路。
+    ** 1. 统计每个道路端点的可行走半径。
+    *******************************************************************************/
+    static void map_road_end_point_to_city_map_with_clearance();
+
+    static bool is_valid_position(const std::vector<std::vector<char>> & grid,
+        const int x, const int y, const bool actual);
+    static bool is_valid_edge(const std::vector<std::vector<char>> & grid,
+        const int a, const int b, const int c, const int d);
+    static int get_point_clearance(const std::vector<std::vector<char>> & grid,
+        const int x, const int y, const bool actual, const bool river); 
+    static bool check_for_clearance(const std::vector<std::vector<char>> & grid,
+        const int x, const int y, const int r, const bool actrual, const bool river);
+
+    static int get_connect_component_dfs(const std::vector<std::vector<int>> & city_graph, std::vector<int> & weight, const int u);
+    static void set_connect_component_dfs(const std::vector<std::vector<int>> & city_graph, std::vector<int> & weight, const int u, const int w);
 };
 
