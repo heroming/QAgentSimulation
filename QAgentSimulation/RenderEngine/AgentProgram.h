@@ -22,8 +22,8 @@ public:
     void render();
 
     void load_data();
-    void bind_next();
-    void bind_prevois();
+    bool bind_next();
+    bool bind_prevois();
 
 private:
 

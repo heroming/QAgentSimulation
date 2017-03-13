@@ -6,6 +6,7 @@
 QAgentSimulationWidget::QAgentSimulationWidget(QWidget * parent, Qt::WFlags flags)
     : QMainWindow(parent, flags)
 {
+    m_timer = new QTimer;
     m_simulation = new QAgentSimulation(this);
     setCentralWidget(m_simulation);
 
@@ -48,6 +49,7 @@ void QAgentSimulationWidget::init_actions()
     m_action_animation_play = new QAction(QIcon("Resources/play.png"), tr("播放动画"), this);
     m_action_animation_play->setStatusTip(tr("播放动画"));
     m_action_animation_play->setToolTip(tr("播放动画"));
+    m_action_animation_play->setCheckable(true);
 
     m_action_animation_next = new QAction(QIcon("Resources/next.png"), tr("下一帧"), this);
     m_action_animation_next->setStatusTip(tr("下一帧"));
@@ -61,6 +63,8 @@ void QAgentSimulationWidget::init_actions()
 
 void QAgentSimulationWidget::init_message_maps()
 {
+    connect(m_timer, SIGNAL(timeout()), this, SLOT(on_timer_timeout()));
+
     connect(m_action_show_agent, SIGNAL(triggered()), this, SLOT(on_action_show_agent()));
     connect(m_action_show_road, SIGNAL(triggered()), this, SLOT(on_action_show_road()));
     connect(m_action_show_main_road, SIGNAL(triggered()), this, SLOT(on_action_show_main_road()));
@@ -115,15 +119,24 @@ void QAgentSimulationWidget::on_action_show_selection_road()
 
 void QAgentSimulationWidget::on_action_animation_play()
 {
-    m_simulation->animation_play();
+    m_simulation->animation_play(m_timer);
 }
 
 void QAgentSimulationWidget::on_action_animation_next()
 {
-    m_simulation->animation_next();
+    m_simulation->animation_next(m_timer);
 }
 
 void QAgentSimulationWidget::on_action_animation_previous()
 {
-    m_simulation->animation_previous();
+    m_simulation->animation_previous(m_timer);
+}
+
+void QAgentSimulationWidget::on_timer_timeout()
+{
+    if (m_simulation->animation_timeout(m_timer))
+    {
+        m_action_animation_play->setChecked(false);
+        m_simulation->animation_play(m_timer);
+    }
 }

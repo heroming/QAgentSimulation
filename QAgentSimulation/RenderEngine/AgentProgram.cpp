@@ -156,18 +156,22 @@ void AgentProgram::load_data()
     }
 }
 
-void AgentProgram::bind_next()
+bool AgentProgram::bind_next()
 {
     if (m_timestep + 1 < TIME_COUNT)
     {
         bind_buffer_data(++ m_timestep);
+        return true;
     }
+    return false;
 }
 
-void AgentProgram::bind_prevois()
+bool AgentProgram::bind_prevois()
 {
     if (m_timestep > 0)
     {
         bind_buffer_data(-- m_timestep);
+        return true;
     }
+    return false;
 }

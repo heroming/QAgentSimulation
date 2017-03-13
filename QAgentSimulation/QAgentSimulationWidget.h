@@ -21,6 +21,8 @@ public slots:
     void on_action_animation_next();
     void on_action_animation_previous();
 
+    void on_timer_timeout();
+
 protected:
     void init_actions();
     void init_message_maps();
@@ -47,6 +49,10 @@ private:
     QAction * m_action_animation_play;
     QAction * m_action_animation_next;
     QAction * m_action_animation_previous;
+
+
+    // ----------------------- Timer --------------------
+    QTimer * m_timer;
 
 private:
     QAgentSimulation * m_simulation;

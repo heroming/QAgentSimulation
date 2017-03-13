@@ -22,6 +22,9 @@ QAgentSimulation::QAgentSimulation(QWidget *parent): QGLWidget(parent)
     m_show_main_road = false;
     m_show_selection_road = false;
 
+    m_animation_play = false;
+    m_animation_speed = 256;
+
     m_city.set_camera(&m_camera);
     m_city.load_data();
     m_river.set_camera(&m_camera);
@@ -218,20 +221,58 @@ void QAgentSimulation::set_show_selection_road(bool flag)
     update();
 }
 
-void QAgentSimulation::animation_play()
+void QAgentSimulation::animation_play(QTimer * timer)
 {
+    m_animation_play = !m_animation_play;
+    if (m_animation_play)
+    {
+        timer->start(m_animation_speed);
+    }
+    else
+    {
+        timer->stop();
+    }
 }
 
-void QAgentSimulation::animation_next()
+void QAgentSimulation::animation_next(QTimer * timer)
 {
-    m_agent.bind_next();
+    if (m_animation_play)
+    {
+        if (m_animation_speed > 4) m_animation_speed >>= 1;
+        timer->start(m_animation_speed);
+    }
+    else
+    {
+        m_agent.bind_next();
+    }
     update();
 }
 
-void QAgentSimulation::animation_previous()
+void QAgentSimulation::animation_previous(QTimer * timer)
 {
-    m_agent.bind_prevois();
+    if (m_animation_play)
+    {
+        if (m_animation_speed < 4096) m_animation_speed <<= 1;
+        timer->start(m_animation_speed);
+    }
+    else
+    {
+        m_agent.bind_prevois();
+    }
     update();
+}
+
+bool QAgentSimulation::animation_timeout(QTimer * timer)
+{
+    if (!m_agent.bind_next())
+    {
+        timer->stop();
+        m_agent.bind_buffer_data();
+        update();
+        return true;
+    }
+    update();
+    return false;
 }
 
 

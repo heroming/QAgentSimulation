@@ -187,7 +187,8 @@ void SelectionRoadProgram::road_select(const int x, const int y)
     }
 
     float wx = 0.0, wy = 0.0, wz = 0.0;
-    m_camera->screen_to_world_coordinate(x, y, wx, wy, wz);
+    //m_camera->screen_to_world_coordinate(x, y, wx, wy, wz);
+    m_camera->screen_to_world_flat_coordinate(x, y, wx, wy, wz);
 
     const int MIN_X = 558;
     const int MIN_Y = 59180;
@@ -233,7 +234,23 @@ void SelectionRoadProgram::road_select(const int x, const int y)
                 IO::load_road_attribute_data(attribute_exits_path, exits, true);
             }
             int a = m_index[road << 1], b = m_index[road << 1 | 1];
+
+            // test
+            //{
+                //printf("\n\n\n\n---------------------\n");
+                //int gx = 0, gy = 0;
+                //float fx = 0, fy = 0, fz = 0;
+                //m_camera->screen_to_world_coordinate(x, y, fx, fy, fz);
+                //printf("(%d, %d) ==> (%.0f, %.0f, %.0f)\n", x, y, fx, fy, fz);
+                //m_camera->world_to_screen_coordinate(fx, fy, fz, gx, gy);
+                //printf("(%.0f, %.0f, %.0f) ==> (%d %d)\n", fx, fy, fz, gx, gy);
+                //m_camera->screen_to_world_flat_coordinate(x, y, fx, fy, fz);
+
+                //printf("(%.0f, %.0f) --- (%.0f, %.0f)\n", m_point[a * 3], m_point[a * 3 + 1], m_point[b * 3], m_point[b * 3 + 1]);
+            //}
+
             printf("Select Road : %d, weight = %.2lf, exits = (%d, %d)\n", road, weight[road], (int)exits[a], (int)exits[b]);
+
         }
         update_selection_buffer();
     }

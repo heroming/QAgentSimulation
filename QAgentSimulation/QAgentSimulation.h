@@ -34,9 +34,10 @@ public:
     bool is_show_selection_road() const;
     void set_show_selection_road(bool flag);
 
-    void animation_play();
-    void animation_next();
-    void animation_previous();
+    void animation_play(QTimer * timer);
+    void animation_next(QTimer * timer);
+    void animation_previous(QTimer * timer);
+    bool animation_timeout(QTimer * timer);
 
 protected:
     void initializeGL();
@@ -59,6 +60,9 @@ private:
     bool m_show_road;
     bool m_show_main_road;
     bool m_show_selection_road;
+
+    bool m_animation_play;
+    int m_animation_speed;
 
     UniformCamera m_camera;
 

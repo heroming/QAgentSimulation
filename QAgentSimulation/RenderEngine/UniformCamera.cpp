@@ -255,6 +255,33 @@ void UniformCamera::screen_to_world_coordinate(const int x, const int y, float &
     wx = po.x / po.w, wy = po.y / po.w, wz = po.z / po.w;
 }
 
+void UniformCamera::screen_to_world_flat_coordinate(const int x, const int y, float & wx, float & wy, float & wz)
+{
+    static const float EPS = 1e-6;
+
+    float a = 2.0 * (x - config.viewport.x) / config.viewport.z - 1.0;
+    float b = 1.0 - 2.0 * (y - config.viewport.y) / config.viewport.w;
+
+    glm::vec4 po;
+    glm::mat4 inv = glm::inverse(projection_matrix * mv_matrix);
+
+    float l = -3.0, r = 3.0;
+    while (r - l > EPS)
+    {
+        float m = (l + r) * 0.5;
+        po = inv * glm::vec4(a, b, m, 1.0);
+        if (po.z / po.w > 0)
+        {
+            l = m;
+        }
+        else
+        {
+            r = m;
+        }
+    }
+    wx = po.x / po.w, wy = po.y / po.w, wz = po.z / po.w;
+}
+
 void UniformCamera::world_to_screen_coordinate(const float x, const float y, const float z, int & sx, int & sy)
 {
     glm::vec4 po = projection_matrix * (mv_matrix * glm::vec4(x, y, z, 1.0));
