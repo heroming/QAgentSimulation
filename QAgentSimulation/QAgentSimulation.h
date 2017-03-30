@@ -14,6 +14,8 @@
 #include "RenderEngine/RoadProgram.h"
 #include "RenderEngine/SelectionRoadProgram.h"
 
+#include "CreateRoad.h"
+
 class QAgentSimulation : public QGLWidget
 {
     Q_OBJECT
@@ -33,6 +35,11 @@ public:
 
     bool is_show_selection_road() const;
     void set_show_selection_road(bool flag);
+
+    bool is_creat_road() const;
+    void set_creat_road(bool flag);
+    void create_road();
+    void create_road_finish();
 
     void animation_play(QTimer * timer);
     void animation_next(QTimer * timer);
@@ -60,6 +67,9 @@ private:
     bool m_show_road;
     bool m_show_main_road;
     bool m_show_selection_road;
+
+    bool m_is_create_road;
+    CreateRoad m_create_road;
 
     bool m_animation_play;
     int m_animation_speed;

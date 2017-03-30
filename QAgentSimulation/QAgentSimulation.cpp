@@ -1,5 +1,6 @@
 #include "QAgentSimulation.h"
 #include "Algorithm.h"
+#include "QDialogCreatRoad.h"
 
 #include <freeglut.h>
 
@@ -16,11 +17,15 @@ QAgentSimulation::QAgentSimulation(QWidget *parent): QGLWidget(parent)
     //Algorithm::calculate_road_statistic_information();
     //Algorithm::filter_main_road_by_road_weight();
     //Algorithm::map_road_end_point_to_city_map_with_clearance();
+    //Algorithm::calculate_shelter_influence();
+    //Algorithm::calculate_space_clearance();
+    //Algorithm::add_detailed_road();
 
     m_show_agent = false;
-    m_show_road = true;
+    m_show_road = false;
     m_show_main_road = false;
     m_show_selection_road = false;
+    m_is_create_road = false;
 
     m_animation_play = false;
     m_animation_speed = 256;
@@ -53,7 +58,7 @@ void QAgentSimulation::initializeGL()
     GLenum l_glew_state = glewInit();
     if (l_glew_state != GLEW_OK) QMessageBox::warning(this, tr("GLEW"), tr("初始化错误！"));
 
-    glClearColor(1.0, 1.0, 1.0, 1.0);
+    glClearColor(1.0, 1.0, 1.0, 0.8);
 
     m_city.link_program();
     m_city.setup_vertex_array();
@@ -92,9 +97,45 @@ void QAgentSimulation::paintGL()
     m_river.render();
     m_shelter.render();
 
+    if (m_is_create_road)
+    {
+        glEnable(GL_POINT_SIZE);
+        glEnable(GL_POINT_SMOOTH);
+        glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glMultMatrixf(m_camera.get_projection_matrix());
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glMultMatrixf(m_camera.get_model_view_matrix());
+
+        glPointSize(10.0f);
+        glBegin(GL_POINTS);
+        glColor3f(1.0f, 0.4f, 0.4f);
+        glVertex2f(m_create_road.get_x(), m_create_road.get_y());
+        glEnd();
+
+        glPointSize(5.0f);
+        glBegin(GL_POINTS);
+        glColor3f(0.13f, 0.22f, 0.27f);
+        const std::vector<float> & points = m_create_road.get_point();
+        int point_size = (int)points.size();
+        for (int i = 0; i < point_size; i += 3)
+        {
+            glVertex2f(points[i], points[i + 1]);
+        }
+        glEnd();
+
+        glPopMatrix();
+
+        glPointSize(1.0f);
+        glDisable(GL_POINT_SIZE);
+    }
+
     if (m_show_agent) m_agent.render();
     if (m_show_road) m_road.render();
-    if (m_show_main_road) m_main_road.render();
+    if (m_show_main_road || m_is_create_road) m_main_road.render();
     if (m_show_selection_road) m_selection_road.render();
 }
 
@@ -122,7 +163,11 @@ void QAgentSimulation::mouseMoveEvent(QMouseEvent * eve)
     {
     case Qt::LeftButton:
         {
-            m_camera.rotate(m_mouse_x, m_mouse_y, l_x, l_y);
+            // 在创建道路时，为了2D坐标转换3D坐标的精确性，暂时不能旋转
+            if (! m_is_create_road)
+            {
+                m_camera.rotate(m_mouse_x, m_mouse_y, l_x, l_y);
+            }
         }
         break;
     case Qt::MidButton:
@@ -153,10 +198,37 @@ void QAgentSimulation::mousePressEvent(QMouseEvent * eve)
                 m_selection_road.road_select(m_mouse_x, m_mouse_y);
                 update();
             }
+            if (m_is_create_road)
+            {
+                float l_x, l_y, l_z;
+                m_camera.screen_to_world_flat_coordinate(m_mouse_x, m_mouse_y, l_x, l_y, l_z);
+                m_create_road.point_clicked(l_x, l_y);
+                const std::vector<int> & l_index = m_create_road.get_index();
+                const std::vector<float> & l_point = m_create_road.get_point();
+                m_main_road.update_date(l_index, l_point);
+                m_main_road.bind_buffer_data();
+                update();
+            }
         }
         break;
     case Qt::MidButton:
+        {
+            if (m_is_create_road)
+            {
+                m_create_road.set_begin(true);
+            }
+        }
+        break;
     case Qt::RightButton:
+        {
+            m_create_road.delete_recent();
+            const std::vector<int> & l_index = m_create_road.get_index();
+            const std::vector<float> & l_point = m_create_road.get_point();
+            m_main_road.update_date(l_index, l_point);
+            m_main_road.bind_buffer_data();
+            update();
+        }
+        break;
     case Qt::NoButton:
     default:
         break;
@@ -204,6 +276,40 @@ void QAgentSimulation::set_show_main_road(bool flag)
 {
     m_show_main_road = flag;
     update();
+}
+
+bool QAgentSimulation::is_creat_road() const
+{
+    return m_is_create_road;
+}
+
+void QAgentSimulation::set_creat_road(bool flag)
+{
+    m_is_create_road = flag;
+    update();
+}
+
+void QAgentSimulation::create_road()
+{
+    m_create_road.clear();
+    QDialogCreatRoad * dialog = new QDialogCreatRoad;
+    if (dialog->exec())
+    {
+        m_create_road.set_save_path(dialog->get_save_path());
+        m_create_road.set_init_path(dialog->get_init_path());
+        m_create_road.set_radius(dialog->get_radius());
+        m_create_road.set_length(dialog->get_length());
+        m_create_road.load_data(m_create_road.get_init_path());
+        m_main_road.load_data(m_create_road.get_init_path());
+        m_main_road.bind_buffer_data();
+        set_creat_road(true);
+    }
+}
+
+void QAgentSimulation::create_road_finish()
+{
+    set_creat_road(false);
+    m_create_road.save();
 }
 
 bool QAgentSimulation::is_show_selection_road() const

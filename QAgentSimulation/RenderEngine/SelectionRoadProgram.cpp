@@ -249,6 +249,7 @@ void SelectionRoadProgram::road_select(const int x, const int y)
                 //printf("(%.0f, %.0f) --- (%.0f, %.0f)\n", m_point[a * 3], m_point[a * 3 + 1], m_point[b * 3], m_point[b * 3 + 1]);
             //}
 
+            printf("[%d, %d] = (%.2f, %.2f) - (%.2f, %.2f)\n", a, b, m_point[a * 3], m_point[a * 3 + 1], m_point[b * 3], m_point[b * 3 + 1]);
             printf("Select Road : %d, weight = %.2lf, exits = (%d, %d)\n", road, weight[road], (int)exits[a], (int)exits[b]);
 
         }

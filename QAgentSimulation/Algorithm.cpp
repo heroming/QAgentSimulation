@@ -1,9 +1,3 @@
-#include <map>
-#include <set>
-#include <vector>
-#include <algorithm>
-#include <functional>
-
 #include <QtGui>
 
 #include "Algorithm.h"
@@ -29,6 +23,9 @@ const int MAX_Y = 64580;
 const int WIDTH = MAX_X - MIN_X;
 const int CITY_WIDTH = CITY_MAX_X - MIN_X;
 const int HEIGHT = MAX_Y - MIN_Y;
+
+int front, tail;
+int que[WIDTH * HEIGHT];
 
 void Algorithm::build_city_grid_map()
 {
@@ -663,6 +660,10 @@ float Algorithm::get_neibor_heat(const int x, const int y, const int w,
 }
 
 
+
+/******************************************************************************
+** 3 : 根据道路的信息统计，路网构建 
+*******************************************************************************/
 void Algorithm::calculate_road_statistic_information()
 {
     const std::string road_path = "./Data/road/road.dat";
@@ -887,7 +888,7 @@ void Algorithm::connect_main_road_network()
 
 
 /******************************************************************************
-** 3 : 先将道路映射到网格中，在根据agent移动将heat值累积到道路上，用于过滤主道路
+** 4 : 先将道路映射到网格中，在根据agent移动将heat值累积到道路上，用于过滤主道路
 *******************************************************************************/
 void Algorithm::map_city_grid_and_road()
 {
@@ -1108,7 +1109,7 @@ void Algorithm::filter_main_road_by_road_weight()
 
 
 /******************************************************************************
-** 4 : 直接计算道路的宽度，用于过滤主道路
+** 5 : 直接计算道路的宽度，用于过滤主道路
 *******************************************************************************/
 bool Algorithm::is_valid_position(const std::vector<std::vector<char>> & grid, const int x, const int y, const bool actrual)
 {
@@ -1486,5 +1487,232 @@ void Algorithm::set_connect_component_dfs(const std::vector<std::vector<int>> & 
         }
     }
 }
+
+
+/******************************************************************************
+** 1 : 计算shelter容量及范围
+*******************************************************************************/
+void Algorithm::calculate_shelter_influence()
+{
+    const std::string city_grid_path = "./Data/city_grid.dat";
+    std::vector<std::vector<char>> city_grid;
+
+    // 导入city map数据(-1 for shelter, 0 for road, 1 for obstacle and 2 for river)
+    bool io_status = IO::load_city_map(city_grid_path, city_grid);
+    if (! io_status)
+    {
+        printf("Load %s failed !\n", city_grid_path.c_str());
+        return;
+    }
+
+    const std::string agent_path = "./Data/agent/agent.dat";
+    std::vector<float> agent;
+
+    // 导入agent位置数据
+    io_status = IO::load_point_data(agent_path, agent);
+    if (! io_status)
+    {
+        printf("Load %s failed !\n", agent_path.c_str());
+        return;
+    }
+
+    // 将agent位置信息进行转换
+    std::vector<int> agent_position;
+    for (int i = 0; i < (int)agent.size(); i += 3)
+    {
+        int x = (int)agent[i] - MIN_X;
+        int y = (int)agent[i + 1] - MIN_Y;
+        agent_position.push_back(x << 16 | y);
+    }
+    std::sort(agent_position.begin(), agent_position.end());
+
+    const int l_row = (int)city_grid.size();
+    const int l_col = (int)city_grid[0].size();
+
+    // 获取每个shelter区域的id和所有格点
+    printf("Find each shelter ...\n");
+    int number_shelter = 0;
+    std::vector<std::vector<int>> dist(l_row, std::vector<int>(l_col, -1));
+    std::vector<std::vector<char>> shelter_id(l_row, std::vector<char>(l_col, -1));
+    for (int i = 0; i < l_row; ++ i)
+        for (int j = 0; j < l_col; ++ j)
+            if (city_grid[i][j] == -1 && shelter_id[i][j] == -1)
+            {
+                calculate_shelter_influence_bfs(city_grid, shelter_id, i, j, number_shelter ++);
+            }
+
+    // 统计shelter的面积
+    printf("Calculate shelter area and capactiy ...\n");
+    front = tail = 0;
+    std::vector<int> area(number_shelter, 0);
+    for (int i = 0; i < l_row; ++ i)
+        for (int j = 0; j < l_col; ++ j)
+            if (city_grid[i][j] == -1)
+            {
+                dist[i][j] = 0;
+                que[front ++] = i << 16 | j;
+                ++ area[shelter_id[i][j]];
+            }
+
+    //for (int i = 0; i < number_shelter; ++ i) printf("%d : %d\n", i, area[i]);
+
+    // 计算shelter的容量
+    std::vector<int> capacity(number_shelter, 0);
+    for (int i = 0; i < number_shelter; ++ i)
+    {
+        capacity[i] = area[i] / 10;
+    }
+
+    //std::vector<int> sort_area(area.begin(), area.end());
+    //std::sort(sort_area.begin(), sort_area.end());
+    //for (int i = 0; i < number_shelter; ++ i) printf("%d : %d\n", i, sort_area[i]);
+
+
+    // 统计shelter影响范围
+    printf("Calculate shelter influence area ...\n");
+    while (tail < front)
+    {
+        int s = que[tail ++];
+        int x = s >> 16;
+        int y = s & ((1 << 16) - 1);
+        int id = shelter_id[x][y];
+
+        for (int k = 0; k < 4; ++ k)
+        {
+            if (capacity[id] == 0) break;
+
+            int a = x + DX[k];
+            int b = y + DY[k];
+            if (is_valid_position(city_grid, a, b, false) && city_grid[a][b] == 0 && shelter_id[a][b] == -1)
+            {
+                int w = a << 16 | b;
+
+                que[front ++] = w;
+                shelter_id[a][b] = id;
+                dist[a][b] = dist[x][y] + 1;
+                if (std::binary_search(agent_position.begin(), agent_position.end(), w))
+                {
+                    -- capacity[id];
+                }
+            }
+        }
+    }
+
+    const std::string distance_to_shelter_path = "./Data/grid/distance_to_shelter";
+    IO::save_city_grid_data(distance_to_shelter_path + ".dat", dist, true);
+    //IO::save_city_grid_data(distance_to_shelter_path + ".txt", dist, false);
+
+    const std::string shelter_influence_path = "./Data/shelter_influence.png";
+    IO::save_city_map_shelter_influence(shelter_influence_path, number_shelter, city_grid, shelter_id);
+
+}
+
+void Algorithm::calculate_shelter_influence_bfs(const std::vector<std::vector<char>> & grid, std::vector<std::vector<char>> & id_map, const int px, const int py, const int id)
+{
+    front = tail = 0;
+    id_map[px][py] = id;
+    que[front ++] = px << 16 | py;
+    while (tail < front)
+    {
+        int w = que[tail ++];
+        int x = w >> 16;
+        int y = w & ((1 << 16) - 1);
+        for (int k = 0; k < 4; ++ k)
+        {
+            int a = x + DX[k];
+            int b = y + DY[k];
+            if (is_valid_position(grid, a, b, false) && grid[a][b] == -1 && id_map[a][b] == -1)
+            {
+                id_map[a][b] = id;
+                que[front ++] = a << 16 | b;
+            }
+        }
+
+    }
+}
+
+
+/******************************************************************************
+** 2 : 计算所有格点clearance
+*******************************************************************************/
+void Algorithm::calculate_space_clearance()
+{
+    const std::string city_grid_path = "./Data/city_grid.dat";
+    std::vector<std::vector<char>> city_grid;
+
+    // 导入city map数据(-1 for shelter, 0 for road, 1 for obstacle and 2 for river)
+    bool io_status = IO::load_city_map(city_grid_path, city_grid);
+    if (! io_status)
+    {
+        printf("Load %s failed !\n", city_grid_path.c_str());
+        return;
+    }
+
+    const int l_row = (int)city_grid.size();
+    const int l_col = (int)city_grid[0].size();
+
+    std::vector<std::vector<int>> clearance(l_row, std::vector<int>(l_col, -1));
+
+    front = tail = 0;
+    for (int i = 0; i < l_row; ++ i)
+        for (int j = 0; j < l_col; ++ j)
+            if (city_grid[i][j] > 0)
+            {
+                clearance[i][j] = 0;
+                que[front ++] = i << 16 | j;
+            }
+
+    // 统计shelter影响范围
+    printf("Calculate grid clearance ...\n");
+    while (tail < front)
+    {
+        int s = que[tail ++];
+        int x = s >> 16;
+        int y = s & ((1 << 16) - 1);
+
+        for (int k = 0; k < 4; ++ k)
+        {
+            int a = x + DX[k];
+            int b = y + DY[k];
+            if (is_valid_position(city_grid, a, b, false) && city_grid[a][b] <= 0 && clearance[a][b] == -1)
+            {
+                int w = a << 16 | b;
+
+                que[front ++] = w;
+                clearance[a][b] = clearance[x][y] + 1;
+            }
+        }
+    }
+
+    const std::string space_clearance_path = "./Data/grid/space_clearance";
+    IO::save_city_grid_data(space_clearance_path + ".dat", clearance, true);
+    //IO::save_city_grid_data(space_clearance_path + ".txt", clearance, false);
+
+    const std::string space_clearance_map_path = "./Data/space_clearance.png";
+    IO::save_city_space_clearance(space_clearance_map_path, city_grid, clearance);
+}
+
+
+
+/*=============================================================================
+  =============================================================================
+  =============================  其他功能函数  ==================================
+  =============================================================================
+  ============================================================================*/
+
+/*********************************** 添加一条道路 ************************************/
+void Algorithm::add_detailed_road()
+{
+    std::vector<int> index;
+    std::vector<float> point;
+
+    IO::load_line_data("./Data/road/road_original.dat", point, index);
+    index.push_back(1);
+    index.push_back(2);
+
+    IO::save_line_data("./Data/road/road.dat", point, index, true);
+    IO::save_line_data("./Data/road/road.txt", point, index, false);
+}
+
 
 

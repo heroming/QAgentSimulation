@@ -74,26 +74,11 @@
     <ClCompile Include="RenderEngine\AgentProgram.cpp">
       <Filter>RenderEngine</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\qrc_QAgentSimulation.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_QAgentSimulation.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_QAgentSimulation.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
     <ClCompile Include="Algorithm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="QAgentSimulationWidget.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_QAgentSimulationWidget.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_QAgentSimulationWidget.cpp">
-      <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="RenderEngine\MainRoadProgram.cpp">
       <Filter>RenderEngine</Filter>
@@ -106,6 +91,27 @@
     </ClCompile>
     <ClCompile Include="RenderEngine\SelectionRoadProgram.cpp">
       <Filter>RenderEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="QDialogCreatRoad.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CreateRoad.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QAgentSimulation.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QAgentSimulationWidget.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\qrc_QAgentSimulation.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QDialogCreatRoad.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -122,6 +128,9 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="QAgentSimulationWidget.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="QDialogCreatRoad.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
@@ -150,9 +159,6 @@
     <ClInclude Include="RenderEngine\AgentProgram.h">
       <Filter>RenderEngine</Filter>
     </ClInclude>
-    <ClInclude Include="GeneratedFiles\ui_QAgentSimulation.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
     <ClInclude Include="RenderEngine\MainRoadProgram.h">
       <Filter>RenderEngine</Filter>
     </ClInclude>
@@ -164,6 +170,15 @@
     </ClInclude>
     <ClInclude Include="RenderEngine\SelectionRoadProgram.h">
       <Filter>RenderEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="CreateRoad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_QAgentSimulation.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

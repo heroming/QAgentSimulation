@@ -124,7 +124,7 @@ void MainRoadProgram::render()
     //glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, m_index_buffer);
 
     glEnable(GL_DEPTH_TEST);
-    glLineWidth(3.0);
+    glLineWidth(2.0);
     glDrawElements(GL_LINES, m_index.size(), GL_UNSIGNED_INT, 0);
     glLineWidth(1.0);
     glDisable(GL_DEPTH_TEST);
@@ -153,9 +153,51 @@ void MainRoadProgram::load_data()
 {
     m_point.clear();
     m_index.clear();
-    IO::load_line_data("./Data/road/main_road_shrink.dat", m_point, m_index);
+    IO::load_line_data("./Data/road/create_main_road.dat", m_point, m_index);
+    //IO::load_line_data("./Data/road/main_road_shrink.dat", m_point, m_index);
     //IO::load_line_data("./Data/road/main_road_clearance_10.dat", m_point, m_index);
     //IO::load_line_data("./Data/road/main_road_clearance.dat", m_point, m_index);
     //IO::load_line_data("./Data/road/main_road.dat", m_point, m_index);
 }
 
+void MainRoadProgram::load_data(const std::string & l_path)
+{
+    m_point.clear();
+    m_index.clear();
+    if (! l_path.empty())
+    {
+        IO::load_line_data(l_path, m_point, m_index);
+    }
+}
+
+void MainRoadProgram::update_date(const std::vector<int> & index, const std::vector<float> & point)
+{
+    int n = (int)index.size();
+    int m = (int)m_index.size();
+    while (n != m)
+    {
+        if (m < n)
+        {
+            m_index.push_back(index[m ++]);
+        }
+        else
+        {
+            -- m;
+            m_index.pop_back();
+        }
+    }
+    n = (int)point.size();
+    m = (int)m_point.size();
+    while (n != m)
+    {
+        if (m < n)
+        {
+            m_point.push_back(point[m ++]);
+        }
+        else
+        {
+            -- m;
+            m_point.pop_back();
+        }
+    }
+}

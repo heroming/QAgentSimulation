@@ -5,6 +5,9 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <cmath>
+#include <ctime>
+#include <algorithm>
 
 #include <QtGui>
 
@@ -86,12 +89,26 @@ public:
     static bool save_city_map_data(const std::string & path, const std::vector<std::vector<char>> & city_map,
         std::vector<std::vector<float>> & data, const float min_value, const float max_value);
 
+    static bool save_city_map_shelter_influence(const std::string & path, const int shelter_number,
+        const std::vector<std::vector<char>> & city_map, const std::vector<std::vector<char>> & data);
+
+    static bool save_city_space_clearance(const std::string & path,
+        const std::vector<std::vector<char>> & city_map,const std::vector<std::vector<int>> & data);
+
 
     /*******************************************************************************
     ** 将计算的2维地图信息保存起来，下次使用时直接读取，不用再进行计算
     *******************************************************************************/
     static bool load_city_grid_data(const std::string & path,
+        std::vector<std::vector<char>> & city, bool binary = false);
+    static bool load_city_grid_data(const std::string & path,
+        std::vector<std::vector<int>> & city, bool binary = false);
+    static bool load_city_grid_data(const std::string & path,
         std::vector<std::vector<float>> & city, bool binary = false);
+    static bool save_city_grid_data(const std::string & path,
+        const std::vector<std::vector<char>> & city, bool binary = false);
+    static bool save_city_grid_data(const std::string & path,
+        const std::vector<std::vector<int>> & city, bool binary = false);
     static bool save_city_grid_data(const std::string & path,
         const std::vector<std::vector<float>> & city, bool binary = false);
 
@@ -103,4 +120,8 @@ public:
         std::vector<float> & data, bool binary = false);
     static bool save_road_attribute_data(const std::string & path,
         const std::vector<float> & data, bool binary = false);
+
+
+
+
 };

@@ -30,5 +30,5 @@ void main()
     vec3 l_diffuse_color = vec3(l_diffuse_factor * 0.7);
     vec3 l_specular_color = vec3(l_specular_factor * 0.5);
 
-	color = vec4(min(l_color.xyz, l_color.xyz * (l_ambient_color + l_diffuse_color + l_specular_color)), 1.0);
+	color = vec4(min(l_color.xyz, l_color.xyz * (l_ambient_color + l_diffuse_color + l_specular_color)), 0.6);
 }

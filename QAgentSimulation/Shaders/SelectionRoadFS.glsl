@@ -15,5 +15,5 @@ void main()
     
     if (l_status == 0) discard;
 
-    color = vec4(0.90, 0.30, 0.23, 1.0);
+    color = vec4(0.20, 0.87, 0.97, 0.5);
 }

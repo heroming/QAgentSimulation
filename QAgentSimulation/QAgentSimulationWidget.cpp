@@ -3,6 +3,7 @@
 #include "QAgentSimulationWidget.h"
 #include "QAgentSimulation.h"
 
+
 QAgentSimulationWidget::QAgentSimulationWidget(QWidget * parent, Qt::WFlags flags)
     : QMainWindow(parent, flags)
 {
@@ -32,7 +33,7 @@ void QAgentSimulationWidget::init_actions()
     m_action_show_road->setStatusTip(tr("显示道路"));
     m_action_show_road->setToolTip(tr("显示道路"));
     m_action_show_road->setCheckable(true);
-    m_action_show_road->setChecked(true);
+    m_action_show_road->setChecked(false);
 
     m_action_show_main_road = new QAction(QIcon("Resources/main_road.png"), tr("显示主要道路"), this);
     m_action_show_main_road->setStatusTip(tr("显示主要道路"));
@@ -59,6 +60,11 @@ void QAgentSimulationWidget::init_actions()
     m_action_animation_previous->setStatusTip(tr("上一帧"));
     m_action_animation_previous->setToolTip(tr("上一帧"));
 
+    m_action_creat_road = new QAction(QIcon("Resources/creat_road.png"), tr("创建道路"), this);
+    m_action_creat_road->setStatusTip(tr("创建道路"));
+    m_action_creat_road->setToolTip(tr("创建道路"));
+    m_action_creat_road->setCheckable(true);
+
 }
 
 void QAgentSimulationWidget::init_message_maps()
@@ -73,12 +79,16 @@ void QAgentSimulationWidget::init_message_maps()
     connect(m_action_animation_play, SIGNAL(triggered()), this, SLOT(on_action_animation_play()));
     connect(m_action_animation_next, SIGNAL(triggered()), this, SLOT(on_action_animation_next()));
     connect(m_action_animation_previous, SIGNAL(triggered()), this, SLOT(on_action_animation_previous()));
+
+    connect(m_action_creat_road, SIGNAL(triggered()), this, SLOT(on_action_creat_road()));
 }
 
 void QAgentSimulationWidget::init_menus()
 {
     m_menubar = menuBar();
     m_menu_file = m_menubar->addMenu(tr("文件(&F)"));
+    m_menu_init = m_menubar->addMenu(tr("初始化(&I)"));
+    m_menu_init->addAction(m_action_creat_road);
 }
 
 void QAgentSimulationWidget::init_tool_bars()
@@ -138,5 +148,21 @@ void QAgentSimulationWidget::on_timer_timeout()
     {
         m_action_animation_play->setChecked(false);
         m_simulation->animation_play(m_timer);
+    }
+}
+
+void QAgentSimulationWidget::on_action_creat_road()
+{
+    if (m_action_creat_road->isChecked())
+    {
+        m_simulation->create_road();
+        m_action_show_main_road->setChecked(true);
+        m_simulation->set_show_main_road(true);
+        m_action_creat_road->setText(tr("完成创建"));
+    }
+    else
+    {
+        m_simulation->create_road_finish();
+        m_action_creat_road->setText(tr("创建道路"));
     }
 }

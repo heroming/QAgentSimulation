@@ -22,6 +22,8 @@ public:
     void render();
 
     void load_data();
+    void load_data(const std::string & l_path);
+    void update_date(const std::vector<int> & index, const std::vector<float> & point);
 
 private:
 
