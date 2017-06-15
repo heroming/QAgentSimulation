@@ -1,4 +1,5 @@
 #include "IO.h"
+#include "Simulation.h"
 
 const int CITY_WIDTH = 8802;
 
@@ -10,6 +11,8 @@ bool IO::file_exist(const std::string & path)
 
 bool IO::load_shader(const std::string & path, std::vector<char> & data)
 {
+    data.clear();
+
     // read shader source
     std::ifstream l_shader_file_stream(path);
     if (!l_shader_file_stream.good())
@@ -32,6 +35,8 @@ bool IO::load_shader(const std::string & path, std::vector<char> & data)
 
 bool IO::load_point_data(const std::string & path, std::vector<float> & point)
 {
+    point.clear();
+
     std::ifstream l_stream(path, std::ios::binary);
     if (!l_stream.good())
     {
@@ -51,8 +56,34 @@ bool IO::load_point_data(const std::string & path, std::vector<float> & point)
     return true;
 }
 
+bool IO::load_index_data(const std::string & path, std::vector<int> & index)
+{
+    index.clear();
+
+    std::ifstream l_stream(path, std::ios::binary);
+    if (!l_stream.good())
+    {
+        printf("Load %s faild !\n", path.c_str());
+        return false;
+    }
+
+    int l_index_size;
+    l_stream.read((char *)&l_index_size, sizeof(int));
+
+    index.resize(l_index_size * 2);
+
+    l_stream.read((char *)index.data(), index.size() * sizeof(int));
+
+    l_stream.close();
+
+    return true;
+}
+
 bool IO::load_line_data(const std::string & path, std::vector<float> & point, std::vector<int> & index)
 {
+    point.clear();
+    index.clear();
+
     std::ifstream l_stream(path, std::ios::binary);
     if (!l_stream.good())
     {
@@ -77,6 +108,9 @@ bool IO::load_line_data(const std::string & path, std::vector<float> & point, st
 
 bool IO::load_triangle_data(const std::string & path, std::vector<float> & point, std::vector<int> & index)
 {
+    point.clear();
+    index.clear();
+
     std::ifstream l_stream(path, std::ios::binary);
     if (!l_stream.good())
     {
@@ -102,6 +136,10 @@ bool IO::load_triangle_data(const std::string & path, std::vector<float> & point
 bool IO::load_damage(const std::string & path, std::vector<int> & x_coordinate,
     std::vector<int> & y_coordinate, std::vector<std::vector<char>> & data)
 {
+    x_coordinate.clear();
+    y_coordinate.clear();
+    data.clear();
+
     printf("loading damage file : %s ...\n", path.c_str());
     std::ifstream l_stream(path);
     if (!l_stream.good())
@@ -210,6 +248,9 @@ bool IO::save_damage_data(const std::string & path,
 
 bool IO::load_graph_data(const std::string & path, std::vector<float> & point, std::vector<int> & index)
 {
+    point.clear();
+    index.clear();
+
     printf("loading graph file : %s  ... ...\n", path.c_str());
     std::ifstream l_stream(path);
     if (!l_stream.good())
@@ -275,6 +316,8 @@ bool IO::load_graph_data(const std::string & path, std::vector<float> & point, s
 
 bool IO::load_graph_attribute(const std::string & path, const std::string & name, std::vector<float> & data)
 {
+    data.clear();
+
     printf("loading graph file : %s  ... ...\n", path.c_str());
     std::ifstream l_stream(path);
     if (!l_stream.good())
@@ -340,6 +383,9 @@ bool IO::load_graph_attribute(const std::string & path, const std::string & name
 
 bool IO::load_agent_data(const std::string & path, std::vector<float> & points, std::vector<int> & ids, bool binary)
 {
+    points.clear();
+    ids.clear();
+
     printf("loading agent : %s  ... ", path.c_str());
 
     if (binary)
@@ -389,7 +435,7 @@ bool IO::load_agent_data(const std::string & path, std::vector<float> & points, 
 
 bool IO::save_agent_data(const std::string & path, const std::vector<float> & points, const std::vector<int> & ids, bool binary)
 {
-    printf("loading agent : %s  ... ", path.c_str());
+    printf("saving agent : %s  ... ", path.c_str());
 
     int point_size = (int)ids.size();
 
@@ -435,6 +481,8 @@ bool IO::save_agent_data(const std::string & path, const std::vector<float> & po
 
 bool IO::load_agent_path(const std::string & path, std::vector<std::vector<float>> & agents, bool binary)
 {
+    agents.clear();
+
     printf("Loading agent path : %s  ...\n", path.c_str());
 
     if (binary)
@@ -596,6 +644,47 @@ bool IO::save_point_data(const std::string & path, const std::vector<float> & po
     return true;
 }
 
+bool IO::save_index_data(const std::string & path, const std::vector<int> & index, bool binary)
+{
+    printf("saving data : %s  ... ...\n", path.c_str());
+
+    int index_size = (int)index.size() >> 1;
+
+    if (binary)
+    {
+        std::ofstream stream(path, std::ios::binary);
+        if (!stream.good())
+        {
+            printf("Save %s faild !\n", path.c_str());
+            return false;
+        }
+
+        stream.write((char *)&index_size, sizeof(int));
+        for (int i = 0; i < (int)index.size(); ++ i)
+        {
+            stream.write((char *)&index[i], sizeof(int));
+        }
+        stream.close();
+    }
+    else
+    {
+        std::ofstream stream(path);
+        if (!stream.good())
+        {
+            printf("Save %s faild !\n", path.c_str());
+            return false;
+        }
+
+        stream << index_size << std::endl;
+        for (int i = 0; i < (int)index.size(); i += 2)
+        {
+            stream << index[i] << " " << index[i + 1] << std::endl;
+        }
+        stream.close();
+    }
+    return true;
+}
+
 bool IO::save_line_data(const std::string & path, const std::vector<float> & point,
     const std::vector<int> & index, bool binary)
 {
@@ -704,6 +793,8 @@ bool IO::save_triangle_data(const std::string & path, const std::vector<float> &
 
 bool IO::load_city_map(const std::string & path, std::vector<std::vector<char>> & data)
 {
+    data.clear();
+
     printf("load city map : %s  ... \n", path.c_str());
 
     std::ifstream stream(path, std::ios::binary);
@@ -723,7 +814,6 @@ bool IO::load_city_map(const std::string & path, std::vector<std::vector<char>> 
     int l_step = (width + PROCESS_STEP - 1) / PROCESS_STEP;
     for (int i = 0; i < width; ++ i)
     {
-
         if (i % l_step == 0) printf("#");
         stream.read(data[i].data(), height);
     }
@@ -929,7 +1019,7 @@ bool IO::save_city_map_shelter_influence(const std::string & path, const int she
 
     if (data.empty() || city_map.empty()) return false;
 
-    srand(shelter_number);
+    srand(time(NULL));
     std::vector<int> color;
     for (int i = 0; i < shelter_number; ++ i)
     {
@@ -948,33 +1038,37 @@ bool IO::save_city_map_shelter_influence(const std::string & path, const int she
         {
             if (city_map[i][j] == 1)
             {
+                //painter.setPen(QColor(150, 155, 170));
                 painter.setPen(QColor(86, 101, 115));
                 painter.drawPoint(i, height - j - 1);
             }
             else if (city_map[i][j] == 2)
             {
-                painter.setPen(QColor(133, 192, 233));
+                painter.setPen(QColor(65, 170, 243));
                 painter.drawPoint(i, height - j - 1);
             }
             else
             {
-                int id = data[i][j];
-                if (id == -1) continue;
-                int s = color[id];
-
-                int r = s & 255;
-                int g = (s >> 8) & 255;
-                int b = (s >> 16) & 255;
-
-                if (city_map[i][j] == -1)
+                if (data[i][j] != -1)
                 {
-                    painter.setPen(QColor(r, g, b, 172));
+                    int id = data[i][j];
+                    if (id == -1) continue;
+                    int s = color[id];
+
+                    int r = s & 255;
+                    int g = (s >> 8) & 255;
+                    int b = (s >> 16) & 255;
+
+                    if (city_map[i][j] == -1)
+                    {
+                        painter.setPen(QColor(r, g, b, 172));
+                    }
+                    else
+                    {
+                        painter.setPen(QColor(r, g, b, 96));
+                    }
+                    painter.drawPoint(i, height - j - 1);
                 }
-                else
-                {
-                    painter.setPen(QColor(r, g, b, 128));
-                }
-                painter.drawPoint(i, height - j - 1);
             }
         }
     }
@@ -987,7 +1081,7 @@ bool IO::save_city_map_shelter_influence(const std::string & path, const int she
 }
 
 bool IO::save_city_space_clearance(const std::string & path,
-    const std::vector<std::vector<char>> & city_map, const std::vector<std::vector<int>> & data)
+    const std::vector<std::vector<char>> & city_map, const std::vector<std::vector<float>> & data)
 {
     printf("save city map data : %s ... \n", path.c_str());
 
@@ -1001,10 +1095,10 @@ bool IO::save_city_space_clearance(const std::string & path,
     if (data.empty() || city_map.empty()) return false;
 
     const int lit = 32;
-    const int inf = 32;
+    const int inf = 50;
 
     int l_step = (width + PROCESS_STEP - 1) / PROCESS_STEP;
-    for (int i = 0; i < width && i < CITY_WIDTH; ++ i)
+    for (int i = 0; i < width; ++ i)
     {
         if (i % l_step == 0) printf("#");
         for (int j = 0; j < height; ++ j)
@@ -1027,9 +1121,19 @@ bool IO::save_city_space_clearance(const std::string & path,
                 }
                 else
                 {
-                    int dis = data[i][j];
+                    int dis = (int)data[i][j];
                     if (dis > inf) dis = inf;
-                    painter.setPen(QColor(110, 147, 45, lit + (dis << 2)));
+                    painter.setPen(QColor(110, 147, 45, lit + dis * 4));
+                    /*
+                    if (dis > inf)
+                    {
+                        painter.setPen(QColor(34, 153, 84, 72));
+                    }
+                    else
+                    {
+                        painter.setPen(QColor(243, 156, 18, lit + inf - dis));    // 橙色
+                    }
+                    */
                 }
                 painter.drawPoint(i, height - j - 1);
             }
@@ -1043,8 +1147,176 @@ bool IO::save_city_space_clearance(const std::string & path,
     return true;
 }
 
+bool IO::save_city_image_data(const std::string & path,
+    const std::vector<std::vector<char>> & city_map, const std::vector<std::vector<char>> & data)
+{
+    printf("save city map data : %s ... \n", path.c_str());
+
+    if (data.empty() || city_map.empty()) return false;
+
+    const int width = (int)data.size();
+    const int height = (int)data[0].size();
+
+    std::string id = "0";
+    for (int c = 0; c < 5; ++ c)
+    {
+        srand(time(NULL));
+        std::vector<int> color;
+        const int color_count = 1024;
+        for (int i = 0; i < color_count; ++ i)
+        {
+            int r = rand() % 256;
+            int g = rand() % 256;
+            int b = rand() % 256;
+            color.push_back((b << 16) | (g << 8) | r);
+        }
+        std::random_shuffle(color.begin(), color.end());
+
+        QImage city(width, height, QImage::Format_RGB32);
+        city.fill(QColor("white"));
+        QPainter painter(&city);
+
+        int l_step = (std::min(width, CITY_WIDTH) + PROCESS_STEP - 1) / PROCESS_STEP;
+        for (int i = 0; i < width && i < CITY_WIDTH; ++ i)
+        {
+            if (i % l_step == 0) printf("#");
+            for (int j = 0; j < height; ++ j)
+            {
+                // 如果想看shelter情况，不要这个if
+                //if (city_map[i][j] == -1)
+                //{
+                    //painter.setPen(QColor(29, 131, 72));
+                    //painter.drawPoint(i, height - j - 1);
+                //}
+                if (city_map[i][j] == 1)
+                {
+                    painter.setPen(QColor(86, 101, 115));
+                    painter.drawPoint(i, height - j - 1);
+                }
+                else if (city_map[i][j] == 2)
+                {
+                    painter.setPen(QColor(65, 170, 243));
+                    painter.drawPoint(i, height - j - 1);
+                }
+                else
+                {
+                    if (data[i][j] != -1)
+                    {
+                        int id = data[i][j];
+                        if (id == -1) continue;
+                        int s = color[id];
+
+                        int r = s & 255;
+                        int g = (s >> 8) & 255;
+                        int b = (s >> 16) & 255;
+
+                        if (city_map[i][j] == -1)
+                        {
+                            painter.setPen(QColor(r, g, b, 172));
+                        }
+                        else
+                        {
+                            painter.setPen(QColor(r, g, b, 96));
+                        }
+                        painter.drawPoint(i, height - j - 1);
+                    }
+                }
+            }
+        }
+
+        id[0] = '0' + c;
+        std::string l_path = path + "_" + id + ".png";
+        QString out_path = QString(l_path.c_str());
+        city.save(out_path, "PNG", 0);
+
+        printf("\nFinish Saving : %s !\n", path.c_str());
+    }
+    return true;
+}
+
+bool IO::save_damage_image_data(const std::string & path,
+    const std::vector<std::vector<char>> & city_map, const std::vector<std::vector<char>> & data)
+{
+    printf("save city map data : %s ... \n", path.c_str());
+
+    if (data.empty() || city_map.empty()) return false;
+
+    const int width = (int)data.size();
+    const int height = (int)data[0].size();
+
+    std::string id = "0";
+    for (int c = 0; c < 3; ++ c)
+    {
+        srand(time(NULL));
+        std::vector<int> color;
+        const int color_count = 1024;
+        for (int i = 0; i < color_count; ++ i)
+        {
+            int r = rand() % 256;
+            int g = rand() % 256;
+            int b = rand() % 256;
+            color.push_back((b << 16) | (g << 8) | r);
+        }
+        std::random_shuffle(color.begin(), color.end());
+
+        QImage city(width, height, QImage::Format_RGB32);
+        city.fill(QColor("white"));
+        QPainter painter(&city);
+
+        int l_step = (width + PROCESS_STEP - 1) / PROCESS_STEP;
+        for (int i = 0; i < width; ++ i)
+        {
+            if (i % l_step == 0) printf("#");
+            for (int j = 0; j < height; ++ j)
+            {
+                if (city_map[i][j] == -1)
+                {
+                    painter.setPen(QColor(29, 131, 72));
+                    painter.drawPoint(i, height - j - 1);
+                }
+                else if (city_map[i][j] == 1)
+                {
+                    painter.setPen(QColor(86, 101, 115));
+                    painter.drawPoint(i, height - j - 1);
+                }
+                else if (city_map[i][j] == 2)
+                {
+                    painter.setPen(QColor(65, 170, 243));
+                    painter.drawPoint(i, height - j - 1);
+                }
+                else
+                {
+                    if (data[i][j] != -1 && data[i][j] != 0)
+                    {
+                        int id = data[i][j];
+                        if (id == -1) continue;
+                        int s = color[id];
+
+                        int r = s & 255;
+                        int g = (s >> 8) & 255;
+                        int b = (s >> 16) & 255;
+
+                        painter.setPen(QColor(r, g, b));
+                        painter.drawPoint(i, height - j - 1);
+                    }
+                }
+            }
+        }
+
+        id[0] = '0' + c;
+        std::string l_path = path + "_" + id + ".png";
+        QString out_path = QString(l_path.c_str());
+        city.save(out_path, "PNG", 0);
+
+        printf("\nFinish Saving : %s !\n", path.c_str());
+    }
+    return true;
+}
+
 bool IO::load_city_grid_data(const std::string & path, std::vector<std::vector<char>> & city, bool binary)
 {
+    city.clear();
+
     printf("Loading city grid data: %s  ...\n", path.c_str());
 
     int width, height;
@@ -1084,11 +1356,16 @@ bool IO::load_city_grid_data(const std::string & path, std::vector<std::vector<c
 
         city.resize(width, std::vector<char>(height));
 
+        int c;
         int l_step = (width + PROCESS_STEP - 1) / PROCESS_STEP;
         for (int i = 0; i < width; ++ i)
         {
             if (i % l_step == 0) printf("#");
-            for (int j = 0; j < height; ++ j) stream >> city[i][j];
+            for (int j = 0; j < height; ++ j)
+            {
+                stream >> c;
+                city[i][j] = c;
+            }
         }
 
         stream.close();
@@ -1100,6 +1377,8 @@ bool IO::load_city_grid_data(const std::string & path, std::vector<std::vector<c
 
 bool IO::load_city_grid_data(const std::string & path, std::vector<std::vector<int>> & city, bool binary)
 {
+    city.clear();
+
     printf("Loading city grid data: %s  ...\n", path.c_str());
 
     int width, height;
@@ -1155,6 +1434,8 @@ bool IO::load_city_grid_data(const std::string & path, std::vector<std::vector<i
 
 bool IO::load_city_grid_data(const std::string & path, std::vector<std::vector<float>> & city, bool binary)
 {
+    city.clear();
+
     printf("Loading city grid data: %s  ...\n", path.c_str());
 
     int width, height;
@@ -1385,8 +1666,99 @@ bool IO::save_city_grid_data(const std::string & path, const std::vector<std::ve
     return true;
 }
 
+bool IO::load_road_attribute_data(const std::string & path, std::vector<char> & data, bool binary)
+{
+    data.clear();
+
+    printf("Loading road attribute : %s  ...\n", path.c_str());
+
+    int data_size;
+    if (binary)
+    {
+        std::ifstream stream(path, std::ios::binary);
+        if (!stream.good())
+        {
+            printf("Load %s faild !\n", path.c_str());
+            return false;
+        }
+
+        stream.read((char *)&data_size, sizeof(int));
+        data.resize(data_size);
+
+        stream.read((char *)data.data(), data.size() * sizeof(char));
+        stream.close();
+    }
+    else
+    {
+        std::ifstream stream(path);
+        if (!stream.good())
+        {
+            printf("Load %s faild !\n", path.c_str());
+            return false;
+        }
+
+        stream >> data_size;
+        data.resize(data_size);
+
+        int w;
+        for (int i = 0; i < data_size; ++ i)
+        {
+            stream >> w;
+            data[i] = w;
+        }
+        stream.close();
+    }
+
+    printf("Finish loading : %s  ...\n", path.c_str());
+    return true;
+}
+
+bool IO::load_road_attribute_data(const std::string & path, std::vector<int> & data, bool binary)
+{
+    data.clear();
+
+    printf("Loading road attribute : %s  ...\n", path.c_str());
+
+    int data_size;
+    if (binary)
+    {
+        std::ifstream stream(path, std::ios::binary);
+        if (!stream.good())
+        {
+            printf("Load %s faild !\n", path.c_str());
+            return false;
+        }
+
+        stream.read((char *)&data_size, sizeof(int));
+        data.resize(data_size);
+
+        stream.read((char *)data.data(), data.size() * sizeof(int));
+        stream.close();
+    }
+    else
+    {
+        std::ifstream stream(path);
+        if (!stream.good())
+        {
+            printf("Load %s faild !\n", path.c_str());
+            return false;
+        }
+
+        stream >> data_size;
+        data.resize(data_size);
+
+        for (int i = 0; i < data_size; ++ i) stream >> data[i];
+        stream.close();
+    }
+
+    printf("Finish loading : %s  ...\n", path.c_str());
+    return true;
+}
+
 bool IO::load_road_attribute_data(const std::string & path, std::vector<float> & data, bool binary)
 {
+    data.clear();
+
     printf("Loading road attribute : %s  ...\n", path.c_str());
 
     int data_size;
@@ -1422,6 +1794,88 @@ bool IO::load_road_attribute_data(const std::string & path, std::vector<float> &
     }
 
     printf("Finish loading : %s  ...\n", path.c_str());
+    return true;
+}
+
+bool IO::save_road_attribute_data(const std::string & path, const std::vector<char> & data, bool binary)
+{
+    printf("Saving road attribute : %s\n", path.c_str());
+    if (data.empty())
+    {
+        printf("Attribute data is empty !\n");
+        return false;
+    }
+
+    int data_size = (int)data.size();
+    if (binary)
+    {
+        std::ofstream stream(path, std::ios::binary);
+        if (!stream.good())
+        {
+            printf("Save %s faild !\n", path.c_str());
+            return false;
+        }
+
+        stream.write((char *)&data_size, sizeof(int));
+        stream.write((char *)data.data(), data_size * sizeof(char));
+        stream.close();
+    }
+    else
+    {
+        std::ofstream stream(path);
+        if (!stream.good())
+        {
+            printf("Save %s faild !\n", path.c_str());
+            return false;
+        }
+
+        stream << data_size << std::endl;
+        for (int i = 0; i < data_size; ++ i) stream << data[i] << std::endl;
+        stream.close();
+    }
+
+    printf("Finish saving: %s !\n", path.c_str());
+    return true;
+}
+
+bool IO::save_road_attribute_data(const std::string & path, const std::vector<int> & data, bool binary)
+{
+    printf("Saving road attribute : %s\n", path.c_str());
+    if (data.empty())
+    {
+        printf("Attribute data is empty !\n");
+        return false;
+    }
+
+    int data_size = (int)data.size();
+    if (binary)
+    {
+        std::ofstream stream(path, std::ios::binary);
+        if (!stream.good())
+        {
+            printf("Save %s faild !\n", path.c_str());
+            return false;
+        }
+
+        stream.write((char *)&data_size, sizeof(int));
+        stream.write((char *)data.data(), data_size * sizeof(int));
+        stream.close();
+    }
+    else
+    {
+        std::ofstream stream(path);
+        if (!stream.good())
+        {
+            printf("Save %s faild !\n", path.c_str());
+            return false;
+        }
+
+        stream << data_size << std::endl;
+        for (int i = 0; i < data_size; ++ i) stream << data[i] << std::endl;
+        stream.close();
+    }
+
+    printf("Finish saving: %s !\n", path.c_str());
     return true;
 }
 
@@ -1463,6 +1917,97 @@ bool IO::save_road_attribute_data(const std::string & path, const std::vector<fl
     }
 
     printf("Finish saving: %s !\n", path.c_str());
+    return true;
+}
+
+bool IO::load_shelters(const std::string & path, std::vector<Shelter> & shelter)
+{
+    shelter.clear();
+
+    printf("loading shelter data : %s  ...\n", path.c_str());
+    shelter.clear();
+
+    std::ifstream stream(path);
+    if (!stream.good())
+    {
+        printf("Load %s faild !\n", path.c_str());
+        return false;
+    }
+
+    int number_shelter;
+    stream >> number_shelter;
+
+    for (int k = 0; k < number_shelter; ++ k)
+    {
+        Shelter she;
+        int l_id, area, number_ids, number_main_ids;
+        stream >> area >> number_ids >> number_main_ids;
+
+        she.area = area;
+        she.initialize();
+
+        for (int i = 0; i < number_ids; ++ i)
+        {
+            stream >> l_id;
+            she.ids.push_back(l_id);
+        }
+
+        for (int i = 0; i < number_main_ids; ++ i)
+        {
+            stream >> l_id;
+            she.main_ids.push_back(l_id);
+        }
+        shelter.push_back(she);
+    }
+
+    stream.close();
+
+    printf("Finish loading: %s !\n", path.c_str());
+    return true;
+}
+
+bool IO::save_shelters(const std::string & path, const std::vector<Shelter> shelter)
+{
+     printf("Saving shelter data : %s  ...\n", path.c_str());
+     if (shelter.empty()) return false;
+
+     std::ofstream stream(path);
+     if (!stream.good())
+     {
+         printf("Save %s faild !\n", path.c_str());
+         return false;
+     }
+
+     const int number_shelter = (int)shelter.size();
+     stream << number_shelter << std::endl;
+
+     for (int k = 0; k < number_shelter; ++ k)
+     {
+         if (k) stream << std::endl;
+         int area = shelter[k].area;
+         int number_ids = (int)shelter[k].ids.size();
+         int number_main_ids = (int)shelter[k].main_ids.size();
+
+         stream << area << " " << number_ids << " " << number_main_ids << std::endl;
+
+         for (int i = 0; i < number_ids; ++ i)
+         {
+             if (i) stream << " ";
+             stream << shelter[k].ids[i];
+         }
+         if (number_ids) stream << std::endl;
+
+         for (int i = 0; i < number_main_ids; ++ i)
+         {
+             if (i) stream << " ";
+             stream << shelter[k].main_ids[i];
+         }
+         if (number_main_ids) stream << std::endl;
+     }
+
+     stream.close();
+
+     printf("Finish saving: %s !\n", path.c_str());
     return true;
 }
 

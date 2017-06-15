@@ -86,7 +86,7 @@ public:
     static void map_road_end_point_to_city_map_with_clearance();
 
     static bool is_valid_position(const std::vector<std::vector<char>> & grid,
-        const int x, const int y, const bool actual);
+        const int x, const int y, const bool actual = false);
     static bool is_valid_edge(const std::vector<std::vector<char>> & grid,
         const int a, const int b, const int c, const int d);
     static int get_point_clearance(const std::vector<std::vector<char>> & grid,
@@ -98,7 +98,7 @@ public:
     static void set_connect_component_dfs(const std::vector<std::vector<int>> & city_graph, std::vector<int> & weight, const int u, const int w);
 
     /******************************************************************************
-    ** 1.6 : 通过交互方法指定主要道路
+    ** 1.6 : 通过交互方法指定主要道路，详见CreatRoad类
     *******************************************************************************/
 
 
@@ -119,7 +119,29 @@ public:
     ** 2.2 : 计算每个空白区域的clearance(即最近障碍距离)，用以表示区域的宽敞程度
     *******************************************************************************/
     static void calculate_space_clearance();
+    static void calculate_damage_clearance();
+    static void calculate_shelter_clearance();
 
+    /******************************************************************************
+    ** 2.3 : 将主要道路与整体道路相关联
+    *******************************************************************************/
+    static void connect_main_road_and_detailed_road();
+
+    /******************************************************************************
+    ** 2.4 : 一些预处理操作
+    ***  a : 计算所有安全区域的信息并存储
+    ***  b : 计算道路的长度和宽度
+    ***  c : 整理其他趟的agent轨迹数据(为了测试agent初始化位置是否一致：比较随机)
+    *******************************************************************************/
+    static void pre_calculate_shelter_infomation();
+    static void pre_calculate_road_distance_and_width();
+    static void pre_calculate_road_distance_and_width(const std::vector<std::vector<char>> & grid,
+        const std::vector<std::vector<int>> & clearance, const std::string & path_in, const std::string & path_out);
+    static void pre_get_agent_timestep_data();
+
+    // d : 查看原数据中逃生者逃到安全区的容纳范围
+    static void pre_calculate_orignal_shelter_influence();
+    static void pre_calculate_my_shelter_influence();
 
     /*=============================================================================
       =============================================================================
@@ -131,6 +153,10 @@ public:
     ** 添加一条道路
     *******************************************************************************/
     static void add_detailed_road();
+    static void get_agent_subset();
+
+    static void get_init_agent();
+    static void get_agent_information();
 
 
 };

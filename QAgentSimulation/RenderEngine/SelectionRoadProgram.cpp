@@ -4,6 +4,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "SelectionRoadProgram.h"
+#include "Simulation.h"
 
 #ifndef NDEBUG
 #include "RenderEngine/GLErrorChecker.h"
@@ -181,14 +182,23 @@ void SelectionRoadProgram::load_data()
 
 void SelectionRoadProgram::road_select(const int x, const int y)
 {
+    static std::vector<Shelter> shelter;
     if (m_grid_road_map.empty())
     {
         IO::load_city_grid_data("./Data/road/grid_road_map.dat", m_grid_road_map, true);
+        IO::load_city_grid_data("./Data/shelter/shelter_id.dat", m_shelter_id, true);
+        IO::load_shelters("./Data/shelter/shelter.txt", shelter);
+        //for (int i = 0; i < shelter.size(); ++ i)
+        //{
+            //printf("%d : %d\n", i, shelter[i].area);
+        //}
     }
 
     float wx = 0.0, wy = 0.0, wz = 0.0;
     //m_camera->screen_to_world_coordinate(x, y, wx, wy, wz);
     m_camera->screen_to_world_flat_coordinate(x, y, wx, wy, wz);
+
+    printf("Click : (%.2f, %.2f)\n", x, y);
 
     const int MIN_X = 558;
     const int MIN_Y = 59180;
@@ -250,10 +260,19 @@ void SelectionRoadProgram::road_select(const int x, const int y)
             //}
 
             printf("[%d, %d] = (%.2f, %.2f) - (%.2f, %.2f)\n", a, b, m_point[a * 3], m_point[a * 3 + 1], m_point[b * 3], m_point[b * 3 + 1]);
-            printf("Select Road : %d, weight = %.2lf, exits = (%d, %d)\n", road, weight[road], (int)exits[a], (int)exits[b]);
+            //printf("Select Road : %d, weight = %.2lf, exits = (%d, %d)\n", road, weight[road], (int)exits[a], (int)exits[b]);
 
         }
         update_selection_buffer();
+    }
+
+    // for shelter infomation
+    const int l_row = (int)m_shelter_id.size();
+    const int l_col = (int)m_shelter_id[0].size();
+    if (0 <= px && px < l_row && 0 <= py && py < l_col && m_shelter_id[px][py] != -1)
+    {
+        int id = m_shelter_id[px][py];
+        printf("shelter (%d, %d), id = %d, area = %d\n", px, py, id, shelter[id].area);
     }
 
 }

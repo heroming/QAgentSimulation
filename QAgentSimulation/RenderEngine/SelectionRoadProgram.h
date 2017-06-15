@@ -40,4 +40,5 @@ private:
     std::vector<float> m_point;
     std::vector<char> m_selection;
     std::vector<std::vector<float>> m_grid_road_map;
+    std::vector<std::vector<char>> m_shelter_id;
 };

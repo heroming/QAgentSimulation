@@ -15,6 +15,8 @@
 #include "RenderEngine/SelectionRoadProgram.h"
 
 #include "CreateRoad.h"
+#include "Simulation.h"
+#include "QAgentEnergyVis.h"
 
 class QAgentSimulation : public QGLWidget
 {
@@ -46,6 +48,15 @@ public:
     void animation_previous(QTimer * timer);
     bool animation_timeout(QTimer * timer);
 
+    void run_simulation(const bool flag);
+    void run_navigation(const bool flag);
+    void run_agent_path(const bool flag);
+    void run_agent_energy(const bool flag);
+    void run_step(const bool flag);
+
+public slots:
+    void on_timer_timeout();
+
 protected:
     void initializeGL();
     void paintGL();
@@ -56,7 +67,15 @@ protected:
     void mousePressEvent(QMouseEvent * eve);
     void mouseReleaseEvent(QMouseEvent * eve);
 
+private :
+    void draw_selected_road();
+    void draw_created_road();
+    void draw_run_navigation();
+    void draw_run_agent_path();
+    void draw_run_agent_energy();
+
 private:
+
     int m_width;
     int m_height;
 
@@ -74,6 +93,14 @@ private:
     bool m_animation_play;
     int m_animation_speed;
 
+    bool m_is_run_navigation;
+    bool m_is_run_agent_path;
+    bool m_is_run_agent_energy;
+    bool m_is_run_step;
+
+    QTimer m_timer;
+    Simulation m_simulation;
+
     UniformCamera m_camera;
 
     CityBuildingProgram m_city;
@@ -84,5 +111,15 @@ private:
     MainRoadProgram m_main_road;
     SelectionRoadProgram m_selection_road;
 
+
+    // For Debug
+    std::vector<Point> m_navigation_vertex;
+    std::vector<bool> m_navigation_main;
+    std::vector<float> m_navigation_weight;
+
+    Agent m_energy_agent;
+    Sample m_energy_sample;
+
+    QAgentEnergyVis * m_agent_energy_vis;
 };
 

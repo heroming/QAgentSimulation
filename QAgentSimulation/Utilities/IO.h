@@ -11,6 +11,8 @@
 
 #include <QtGui>
 
+class Shelter;
+
 class IO
 {
 public:
@@ -23,6 +25,7 @@ public:
     *******************************************************************************/
     static bool load_shader(const std::string & path, std::vector<char> & data);
     static bool load_point_data(const std::string & path, std::vector<float> & point);
+    static bool load_index_data(const std::string & path, std::vector<int> & index);
     static bool load_line_data(const std::string & path,
         std::vector<float> & point, std::vector<int> & index);
     static bool load_triangle_data(const std::string & path,
@@ -69,6 +72,8 @@ public:
     *******************************************************************************/
     static bool save_point_data(const std::string & path,
         const std::vector<float> & point, bool binary = false);
+    static bool save_index_data(const std::string & path,
+        const std::vector<int> & index, bool binary = false);
     static bool save_line_data(const std::string & path,
         const std::vector<float> & point, const std::vector<int> & index, bool binary = false);
     static bool save_triangle_data(const std::string & path,
@@ -93,7 +98,13 @@ public:
         const std::vector<std::vector<char>> & city_map, const std::vector<std::vector<char>> & data);
 
     static bool save_city_space_clearance(const std::string & path,
-        const std::vector<std::vector<char>> & city_map,const std::vector<std::vector<int>> & data);
+        const std::vector<std::vector<char>> & city_map, const std::vector<std::vector<float>> & data);
+
+    static bool save_city_image_data(const std::string & path,
+        const std::vector<std::vector<char>> & city_map, const std::vector<std::vector<char>> & data);
+
+    static bool save_damage_image_data(const std::string & path,
+        const std::vector<std::vector<char>> & city_map, const std::vector<std::vector<char>> & data);
 
 
     /*******************************************************************************
@@ -117,11 +128,22 @@ public:
     ** 保存关于道路的属性数据，包括节点和单元数据
     *******************************************************************************/
     static bool load_road_attribute_data(const std::string & path,
+        std::vector<char> & data, bool binary = false);
+    static bool load_road_attribute_data(const std::string & path,
+        std::vector<int> & data, bool binary = false);
+    static bool load_road_attribute_data(const std::string & path,
         std::vector<float> & data, bool binary = false);
+
+    static bool save_road_attribute_data(const std::string & path,
+        const std::vector<char> & data, bool binary = false);
+    static bool save_road_attribute_data(const std::string & path,
+        const std::vector<int> & data, bool binary = false);
     static bool save_road_attribute_data(const std::string & path,
         const std::vector<float> & data, bool binary = false);
 
-
-
-
+    /*******************************************************************************
+    ** 保存shelter数据
+    *******************************************************************************/
+    static bool load_shelters(const std::string & path, std::vector<Shelter> & shelter);
+    static bool save_shelters(const std::string & path, const std::vector<Shelter> shelter);
 };

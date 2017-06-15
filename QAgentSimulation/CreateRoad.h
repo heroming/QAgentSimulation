@@ -63,6 +63,9 @@ private :
     // 获取格点(x, y)的空间值
     int get_point_space(const int x, const int y) const;
 
+    // 获取格点(x, y)的空间值
+    int get_point_space_by_clearance(const int x, const int y) const;
+
     // 判断半径为r的空间是否是合理的
     bool check_space(const int x, const int y, const int r) const;
 
@@ -88,5 +91,6 @@ private :
 
     std::vector<int> m_use;
     std::vector<std::vector<char>> m_grid;
+    std::vector<std::vector<int>> m_clearance;
     std::vector<std::vector<int>> m_vert;
 };

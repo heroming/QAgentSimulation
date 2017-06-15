@@ -124,7 +124,7 @@ void MainRoadProgram::render()
     //glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, m_index_buffer);
 
     glEnable(GL_DEPTH_TEST);
-    glLineWidth(2.0);
+    glLineWidth(3.0);
     glDrawElements(GL_LINES, m_index.size(), GL_UNSIGNED_INT, 0);
     glLineWidth(1.0);
     glDisable(GL_DEPTH_TEST);

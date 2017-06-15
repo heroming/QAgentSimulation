@@ -105,6 +105,9 @@ void CreateRoad::point_clicked(const float l_x, const float l_y)
     int x = (int)l_x - MIN_X, y = (int)l_y - MIN_Y;
     if (! valid(x, y) || m_grid[x][y] >= 1) return;
 
+    int click_id = get_vertex_id(l_x, l_y);
+    printf("Click : (%.2f, %.2f), id = %d\n", l_x, l_y, click_id);
+
     if (! m_begin)
     {
         float len = Tool::distance(m_x, m_y, l_x, l_y);
@@ -142,7 +145,7 @@ void CreateRoad::point_clicked(const float l_x, const float l_y)
                 m_point.push_back(0.0);
                 update_vertex_id(nx, ny, l_id);
             }
-            if (pre_id != -1)
+            if (pre_id != -1 && l_id != pre_id)
             {
                 ++ m_use[l_id];
                 ++ m_use[pre_id];
@@ -161,6 +164,11 @@ void CreateRoad::point_clicked(const float l_x, const float l_y)
                     dx = (l_x - x1) / (part - k);
                     dy = (l_y - y1) / (part - k);
                 }
+            }
+            if (pre_id == -1 && k < part)
+            {
+                dx = (l_x - nx) / (part - k);
+                dy = (l_y - ny) / (part - k);
             }
             pre_id = l_id;
         }
@@ -206,6 +214,7 @@ void CreateRoad::delete_recent()
 void CreateRoad::clear()
 {
     const std::string GRID_PATH = "./Data/city_grid.dat";
+    const std::string CLREANCE_PATH = "./Data/grid/space_clearance.dat";
 
     m_begin = 1;
     m_x = m_y = 0.0;
@@ -218,6 +227,8 @@ void CreateRoad::clear()
     m_grid.clear();
     // 导入city map数据(-1 for shelter, 0 for road and 1 for obstacle)
     IO::load_city_map(GRID_PATH, m_grid);
+    IO::load_city_grid_data(CLREANCE_PATH, m_clearance, true);
+
     m_row = (int)m_grid.size();
     m_col = (int)m_grid[0].size();
     m_use.clear();
@@ -277,7 +288,7 @@ void CreateRoad::get_vertex_position(float & x, float & y) const
             int py = (int)l_y + b - MIN_Y;
             if (valid(px, py))
             {
-                int w = get_point_space(px, py);
+                int w = get_point_space_by_clearance(px, py);
                 if (space < w)
                 {
                     space = w;
@@ -286,6 +297,11 @@ void CreateRoad::get_vertex_position(float & x, float & y) const
                 }
             }
         }
+}
+
+int CreateRoad::get_point_space_by_clearance(const int x, const int y) const
+{
+    return m_clearance[x][y];
 }
 
 int CreateRoad::get_point_space(const int x, const int y) const

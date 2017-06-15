@@ -7,6 +7,6 @@ layout (location = 0) in vec3 position;
 
 void main()
 {
-    gl_PointSize = 3.0;
+    gl_PointSize = 4.0;
     gl_Position = projection_matrix * (modelview_matrix * vec4(position, 1.0));
 }

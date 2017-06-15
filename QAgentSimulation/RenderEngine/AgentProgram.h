@@ -25,10 +25,15 @@ public:
     bool bind_next();
     bool bind_prevois();
 
+    void start_simulation(const bool start);
+    void update(const std::vector<float> & agent);
+    int get_timestamp() const;
+
+
 private:
 
     static const int INTERVAL = 50;
-    static const int TIMESTEP = 15000;
+    static const int TIMESTAMP = 15000;
     static const int TIME_COUNT = 300;
     
 
@@ -38,6 +43,8 @@ private:
     GLuint m_program_handle;
     GLuint m_vertex_array_object;
 
-    int m_timestep;
+    int m_size;
+    int m_timestamp;
+    bool m_simulation;
     std::vector<std::vector<float>> m_point;
 };

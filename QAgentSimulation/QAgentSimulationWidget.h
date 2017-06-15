@@ -21,6 +21,12 @@ public slots:
     void on_action_animation_next();
     void on_action_animation_previous();
 
+    void on_action_run_simulation();
+    void on_action_run_navigation();
+    void on_action_run_agent_path();
+    void on_action_run_agent_energy();
+    void on_action_run_step();
+
     void on_timer_timeout();
 
     void on_action_creat_road();
@@ -43,7 +49,6 @@ private:
     QMenu * m_menu_file;                    // 文件
     QMenu * m_menu_init;                    // 初始化
 
-
     // ----------------------- Action --------------------
     QAction * m_action_show_agent;
     QAction * m_action_show_road;
@@ -53,6 +58,12 @@ private:
     QAction * m_action_animation_play;
     QAction * m_action_animation_next;
     QAction * m_action_animation_previous;
+
+    QAction * m_action_run_simulation;
+    QAction * m_action_run_navigation;
+    QAction * m_action_run_agent_path;
+    QAction * m_action_run_agent_energy;
+    QAction * m_action_run_step;
 
     QAction * m_action_creat_road;
 

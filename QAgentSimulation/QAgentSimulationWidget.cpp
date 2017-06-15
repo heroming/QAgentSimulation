@@ -60,6 +60,36 @@ void QAgentSimulationWidget::init_actions()
     m_action_animation_previous->setStatusTip(tr("上一帧"));
     m_action_animation_previous->setToolTip(tr("上一帧"));
 
+    m_action_run_simulation = new QAction(QIcon("Resources/run.png"), tr("开始逃生规划"), this);
+    m_action_run_simulation->setStatusTip(tr("开始逃生规划"));
+    m_action_run_simulation->setToolTip(tr("开始逃生规划"));
+    m_action_run_simulation->setCheckable(true);
+    m_action_run_simulation->setChecked(false);
+
+    m_action_run_navigation = new QAction(QIcon("Resources/navigation.png"), tr("查看某点理想逃生路线"), this);
+    m_action_run_navigation->setStatusTip(tr("查看某点理想逃生路线"));
+    m_action_run_navigation->setToolTip(tr("查看某点理想逃生路线"));
+    m_action_run_navigation->setCheckable(true);
+    m_action_run_navigation->setChecked(false);
+
+    m_action_run_agent_path = new QAction(QIcon("Resources/agent_path.png"), tr("查看逃生者实际逃生路线"), this);
+    m_action_run_agent_path->setStatusTip(tr("查看逃生者实际逃生路线"));
+    m_action_run_agent_path->setToolTip(tr("查看逃生者实际逃生路线"));
+    m_action_run_agent_path->setCheckable(true);
+    m_action_run_agent_path->setChecked(false);
+
+    m_action_run_agent_energy = new QAction(QIcon("Resources/agent_energy.png"), tr("查看逃生者虚拟势能场大小"), this);
+    m_action_run_agent_energy->setStatusTip(tr("查看逃生者虚拟势能场大小"));
+    m_action_run_agent_energy->setToolTip(tr("查看逃生者虚拟势能场大小"));
+    m_action_run_agent_energy->setCheckable(true);
+    m_action_run_agent_energy->setChecked(false);
+
+    m_action_run_step = new QAction(QIcon("Resources/step_next.png"), tr("下一时间步"), this);
+    m_action_run_step->setStatusTip(tr("下一时间步"));
+    m_action_run_step->setToolTip(tr("下一时间步"));
+    m_action_run_step->setCheckable(true);
+    m_action_run_step->setChecked(false);
+
     m_action_creat_road = new QAction(QIcon("Resources/creat_road.png"), tr("创建道路"), this);
     m_action_creat_road->setStatusTip(tr("创建道路"));
     m_action_creat_road->setToolTip(tr("创建道路"));
@@ -79,6 +109,12 @@ void QAgentSimulationWidget::init_message_maps()
     connect(m_action_animation_play, SIGNAL(triggered()), this, SLOT(on_action_animation_play()));
     connect(m_action_animation_next, SIGNAL(triggered()), this, SLOT(on_action_animation_next()));
     connect(m_action_animation_previous, SIGNAL(triggered()), this, SLOT(on_action_animation_previous()));
+
+    connect(m_action_run_simulation, SIGNAL(triggered()), this, SLOT(on_action_run_simulation()));
+    connect(m_action_run_navigation, SIGNAL(triggered()), this, SLOT(on_action_run_navigation()));
+    connect(m_action_run_agent_path, SIGNAL(triggered()), this, SLOT(on_action_run_agent_path()));
+    connect(m_action_run_agent_energy, SIGNAL(triggered()), this, SLOT(on_action_run_agent_energy()));
+    connect(m_action_run_step, SIGNAL(triggered()), this, SLOT(on_action_run_step()));
 
     connect(m_action_creat_road, SIGNAL(triggered()), this, SLOT(on_action_creat_road()));
 }
@@ -105,6 +141,14 @@ void QAgentSimulationWidget::init_tool_bars()
     m_toolbar_animation_option->addAction(m_action_animation_previous);
     m_toolbar_animation_option->addAction(m_action_animation_play);
     m_toolbar_animation_option->addAction(m_action_animation_next);
+
+    m_toolbar_animation_option = this->addToolBar(tr("逃生模拟"));
+    m_toolbar_animation_option->setObjectName("逃生模拟");
+    m_toolbar_animation_option->addAction(m_action_run_simulation);
+    m_toolbar_animation_option->addAction(m_action_run_navigation);
+    m_toolbar_animation_option->addAction(m_action_run_agent_path);
+    m_toolbar_animation_option->addAction(m_action_run_agent_energy);
+    m_toolbar_animation_option->addAction(m_action_run_step);
 }
 
 void QAgentSimulationWidget::on_action_show_agent()
@@ -142,6 +186,13 @@ void QAgentSimulationWidget::on_action_animation_previous()
     m_simulation->animation_previous(m_timer);
 }
 
+void QAgentSimulationWidget::on_action_run_simulation()
+{
+    m_action_show_agent->setChecked(true);
+    on_action_show_agent();
+    m_simulation->run_simulation(m_action_run_simulation->isChecked());
+}
+
 void QAgentSimulationWidget::on_timer_timeout()
 {
     if (m_simulation->animation_timeout(m_timer))
@@ -166,3 +217,24 @@ void QAgentSimulationWidget::on_action_creat_road()
         m_action_creat_road->setText(tr("创建道路"));
     }
 }
+
+void QAgentSimulationWidget::on_action_run_navigation()
+{
+    m_simulation->run_navigation(m_action_run_navigation->isChecked());
+}
+
+void QAgentSimulationWidget::on_action_run_agent_path()
+{
+    m_simulation->run_agent_path(m_action_run_agent_path->isChecked());
+}
+
+void QAgentSimulationWidget::on_action_run_agent_energy()
+{
+    m_simulation->run_agent_energy(m_action_run_agent_energy->isChecked());
+}
+
+void QAgentSimulationWidget::on_action_run_step()
+{
+    m_simulation->run_step(m_action_run_step->isChecked());
+}
+
